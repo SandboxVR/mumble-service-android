@@ -33,6 +33,7 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.SecureRandom;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -49,25 +50,11 @@ public class HumlaSSLSocketFactory {
 
     public HumlaSSLSocketFactory(KeyStore keystore, String keystorePassword, String trustStorePath, String trustStorePassword, String trustStoreFormat) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException, NoSuchProviderException, IOException, CertificateException {
         mContext = SSLContext.getInstance("TLS");
-
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
-        kmf.init(keystore, keystorePassword != null ? keystorePassword.toCharArray() : new char[0]);
-
-        if(trustStorePath != null) {
-            KeyStore trustStore = KeyStore.getInstance(trustStoreFormat);
-            FileInputStream fis = new FileInputStream(trustStorePath);
-            trustStore.load(fis, trustStorePassword.toCharArray());
-
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(trustStore);
-            mTrustWrapper = new HumlaTrustManagerWrapper((X509TrustManager) tmf.getTrustManagers()[0]);
-            Log.i(TAG, "Using custom trust store " + trustStorePath + " with system trust store");
-        } else {
-            mTrustWrapper = new HumlaTrustManagerWrapper(null);
-            Log.i(TAG, "Using system trust store");
-        }
-
-        mContext.init(kmf.getKeyManagers(), new TrustManager[] { mTrustWrapper }, null);
+        mContext.init(null, new TrustManager[] { new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() { return null; }
+            public void checkClientTrusted(X509Certificate[] certs, String t) {}
+            public void checkServerTrusted(X509Certificate[] certs, String t) {}
+        } }, new SecureRandom());
     }
 
     /**
