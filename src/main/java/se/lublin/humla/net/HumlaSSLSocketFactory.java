@@ -33,6 +33,7 @@ import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.SecureRandom;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -47,31 +48,26 @@ public class HumlaSSLSocketFactory {
     private SSLContext mContext;
     private HumlaTrustManagerWrapper mTrustWrapper;
 
-    public HumlaSSLSocketFactory(KeyStore keystore, String keystorePassword, String trustStorePath, String trustStorePassword, String trustStoreFormat) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException, NoSuchProviderException, IOException, CertificateException {
+    public HumlaSSLSocketFactory(KeyStore keystore, String keystorePassword, String trustStorePath,
+            String trustStorePassword, String trustStoreFormat) throws NoSuchAlgorithmException, KeyManagementException,
+            KeyStoreException, UnrecoverableKeyException, NoSuchProviderException, IOException, CertificateException {
         mContext = SSLContext.getInstance("TLS");
+        mContext.init(null, new TrustManager[] { new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
 
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
-        kmf.init(keystore, keystorePassword != null ? keystorePassword.toCharArray() : new char[0]);
+            public void checkClientTrusted(X509Certificate[] certs, String t) {
+            }
 
-        if(trustStorePath != null) {
-            KeyStore trustStore = KeyStore.getInstance(trustStoreFormat);
-            FileInputStream fis = new FileInputStream(trustStorePath);
-            trustStore.load(fis, trustStorePassword.toCharArray());
-
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(trustStore);
-            mTrustWrapper = new HumlaTrustManagerWrapper((X509TrustManager) tmf.getTrustManagers()[0]);
-            Log.i(TAG, "Using custom trust store " + trustStorePath + " with system trust store");
-        } else {
-            mTrustWrapper = new HumlaTrustManagerWrapper(null);
-            Log.i(TAG, "Using system trust store");
-        }
-
-        mContext.init(kmf.getKeyManagers(), new TrustManager[] { mTrustWrapper }, null);
+            public void checkServerTrusted(X509Certificate[] certs, String t) {
+            }
+        } }, new SecureRandom());
     }
 
     /**
-     * Creates a new SSLSocket that runs through a SOCKS5 proxy to reach its destination.
+     * Creates a new SSLSocket that runs through a SOCKS5 proxy to reach its
+     * destination.
      */
     public SSLSocket createTorSocket(String host, int port, String proxyHost, int proxyPort) throws IOException {
         Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(proxyHost, proxyPort));
@@ -86,57 +82,11 @@ public class HumlaSSLSocketFactory {
 
     /**
      * Gets the certificate chain of the remote host.
-     * @return The remote server's certificate chain, or null if a connection has not reached handshake yet.
+     * 
+     * @return The remote server's certificate chain, or null if a connection has
+     *         not reached handshake yet.
      */
     public X509Certificate[] getServerChain() {
         return mTrustWrapper.getServerChain();
-    }
-
-    /**
-     * Wraps around a custom trust manager and stores the certificate chains that did not validate.
-     * We can then send the chain to the user for manual validation.
-     */
-    private static class HumlaTrustManagerWrapper implements X509TrustManager {
-
-        private X509TrustManager mDefaultTrustManager;
-        private X509TrustManager mTrustManager;
-        private X509Certificate[] mServerChain;
-
-        public HumlaTrustManagerWrapper(X509TrustManager trustManager) throws NoSuchAlgorithmException, KeyStoreException {
-            TrustManagerFactory dmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            dmf.init((KeyStore) null);
-            mDefaultTrustManager = (X509TrustManager) dmf.getTrustManagers()[0];
-            mTrustManager = trustManager;
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-            try {
-                mDefaultTrustManager.checkClientTrusted(chain, authType);
-            } catch (CertificateException e) {
-                if(mTrustManager != null) mTrustManager.checkClientTrusted(chain, authType);
-                else throw e;
-            }
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-            mServerChain = chain;
-            try {
-                mDefaultTrustManager.checkServerTrusted(chain, authType);
-            } catch (CertificateException e) {
-                if(mTrustManager != null) mTrustManager.checkServerTrusted(chain, authType);
-                else throw e;
-            }
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return mDefaultTrustManager.getAcceptedIssuers();
-        }
-
-        public X509Certificate[] getServerChain() {
-            return mServerChain;
-        }
     }
 }
