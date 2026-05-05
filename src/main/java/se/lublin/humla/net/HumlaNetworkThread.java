@@ -23,6 +23,7 @@ import android.util.Log;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Base class for TCP/UDP protocol implementations.
@@ -70,17 +71,27 @@ public abstract class HumlaNetworkThread implements Runnable {
     }
 
     protected void executeOnSendThread(Runnable r) {
-        if (mSendExecutor == null) {
+        ExecutorService ex = mSendExecutor;
+        if (ex == null || ex.isShutdown()) {
             return;
         }
-        mSendExecutor.execute(r);
+        try {
+            ex.execute(r);
+        } catch (RejectedExecutionException e) {
+            // shutdown() runs before the field is nulled; another thread can land here mid-teardown.
+        }
     }
 
     protected void executeOnReceiveThread(Runnable r) {
-        if (mSendExecutor == null) {
+        ExecutorService ex = mReceiveExecutor;
+        if (ex == null || ex.isShutdown()) {
             return;
         }
-        mSendExecutor.execute(r);
+        try {
+            ex.execute(r);
+        } catch (RejectedExecutionException e) {
+            // Same teardown race as send executor.
+        }
     }
 
     protected void executeOnMainThread(Runnable r) {
