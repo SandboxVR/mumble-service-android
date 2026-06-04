@@ -169,7 +169,7 @@ public class HumlaUDP implements Runnable {
             // Clear the outgoing queue, in case the caller decides to reconnect with the same socket.
             mSendQueue.clear();
 
-            mUDPSocket.close();
+            closeSocketQuietly();
         }
     }
 
@@ -207,7 +207,18 @@ public class HumlaUDP implements Runnable {
     public void disconnect() {
         mConnected = false;
         // Closing a socket will trigger an IOException on the consumer thread.
-        mUDPSocket.close();
+        closeSocketQuietly();
+    }
+
+    private void closeSocketQuietly() {
+        final DatagramSocket socket;
+        synchronized (this) {
+            socket = mUDPSocket;
+            mUDPSocket = null;
+        }
+        if (socket != null) {
+            socket.close();
+        }
     }
 
     /**
