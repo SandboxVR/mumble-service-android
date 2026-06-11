@@ -76,11 +76,33 @@ jobs:
           test -f prov/build/libs/prov-1.51.0.0.jar
           test -f pkix/build/libs/pkix-1.51.0.0.jar
 
-      - name: Set up Java 11 for Android Gradle plugin
+      - name: Download Temurin JDK 17 from GCP bucket
+        run: |
+          set -euo pipefail
+
+          jdk_version="17.0.19_10"
+          jdk_file="OpenJDK17U-jdk_x64_linux_hotspot_${jdk_version}.tar.gz"
+          base_url="https://storage.googleapis.com/infratool/ci-tools/java/temurin/${jdk_version}"
+
+          curl -L "${base_url}/${jdk_file}" -o "${RUNNER_TEMP}/${jdk_file}"
+          curl -L "${base_url}/${jdk_file}.sha256" -o "${RUNNER_TEMP}/${jdk_file}.sha256"
+
+          expected_hash="$(head -n 1 "${RUNNER_TEMP}/${jdk_file}.sha256" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+          actual_hash="$(sha256sum "${RUNNER_TEMP}/${jdk_file}" | awk '{print $1}')"
+
+          if [ "${actual_hash}" != "${expected_hash}" ]; then
+            echo "JDK checksum mismatch"
+            echo "Expected: ${expected_hash}"
+            echo "Actual:   ${actual_hash}"
+            exit 1
+          fi
+
+      - name: Set up Java 17 for Android SDK
         uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
         with:
-          distribution: temurin
-          java-version: "11"
+          distribution: jdkfile
+          java-version: "17"
+          jdkFile: ${{ runner.temp }}/OpenJDK17U-jdk_x64_linux_hotspot_17.0.19_10.tar.gz
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
@@ -93,6 +115,12 @@ jobs:
             "platforms;android-${ANDROID_PLATFORM_VERSION}" \
             "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
             "ndk;${ANDROID_NDK_VERSION}"
+
+      - name: Set up Java 11 for Android Gradle plugin
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: "11"
 
       - name: Configure local Android SDK paths
         run: |
