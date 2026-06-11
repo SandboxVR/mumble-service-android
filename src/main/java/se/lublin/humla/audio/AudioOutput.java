@@ -53,10 +53,10 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
     private Map<Integer, AudioOutputSpeech> mAudioOutputs = new HashMap<>();
     private AudioTrack mAudioTrack;
     private int mBufferSize;
-    private Thread mThread;
+    private volatile Thread mThread;
     private final Object mInactiveLock = new Object(); // Lock that the audio thread waits on when there's no audio to play. Wake when we get a frame.
     private final Lock mPacketLock;
-    private boolean mRunning = false;
+    private volatile boolean mRunning = false;
     private Handler mMainHandler;
     private AudioOutputListener mListener;
     private final IAudioMixer<float[], short[]> mMixer;
@@ -90,13 +90,18 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
             throw new AudioInitializationException(e);
         }
 
+        if(mDecodeExecutorService.isShutdown()) {
+            mDecodeExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        }
+
+        mRunning = true;
         mThread = new Thread(this);
         mThread.start();
         return mThread;
     }
 
     public void stopPlaying() {
-        if(!mRunning)
+        if(!mRunning && mThread == null)
             return;
 
         mRunning = false;
@@ -111,12 +116,16 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
         mThread = null;
 
         mPacketLock.lock();
-        for(AudioOutputSpeech speech : mAudioOutputs.values()) {
-            speech.destroy();
+        try {
+            for(AudioOutputSpeech speech : mAudioOutputs.values()) {
+                speech.destroy();
+            }
+            mAudioOutputs.clear();
+        } finally {
+            mPacketLock.unlock();
         }
-        mPacketLock.unlock();
+        mDecodeExecutorService.shutdown();
 
-        mAudioOutputs.clear();
         mAudioTrack.release();
         mAudioTrack = null;
     }
@@ -216,28 +225,30 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
             // TODO check for whispers here
             int seq = (int) pds.readLong();
 
-            // Synchronize so we don't destroy an output while we add a buffer to it.
             mPacketLock.lock();
-            AudioOutputSpeech aop = mAudioOutputs.get(session);
-            if(aop != null && aop.getCodec() != messageType) {
-                aop.destroy();
-                aop = null;
-            }
-            if(aop == null) {
-                try {
-                    aop = new AudioOutputSpeech(user, messageType, mBufferSize, this);
-                } catch (NativeAudioException e) {
-                    Log.v(TAG, "Failed to create audio user " + user.getName());
-                    e.printStackTrace();
-                    return;
+            try {
+                AudioOutputSpeech aop = mAudioOutputs.get(session);
+                if(aop != null && aop.getCodec() != messageType) {
+                    aop.destroy();
+                    aop = null;
                 }
-                Log.v(TAG, "Created audio user " + user.getName());
-                mAudioOutputs.put(session, aop);
-            }
-            mPacketLock.unlock();
+                if(aop == null) {
+                    try {
+                        aop = new AudioOutputSpeech(user, messageType, mBufferSize, this);
+                    } catch (NativeAudioException e) {
+                        Log.v(TAG, "Failed to create audio user " + user.getName());
+                        e.printStackTrace();
+                        return;
+                    }
+                    Log.v(TAG, "Created audio user " + user.getName());
+                    mAudioOutputs.put(session, aop);
+                }
 
-            PacketBuffer dataBuffer = new PacketBuffer(pds.bufferBlock(pds.left()));
-            aop.addFrameToBuffer(dataBuffer, msgFlags, seq);
+                PacketBuffer dataBuffer = new PacketBuffer(pds.bufferBlock(pds.left()));
+                aop.addFrameToBuffer(dataBuffer, msgFlags, seq);
+            } finally {
+                mPacketLock.unlock();
+            }
 
             synchronized (mInactiveLock) {
                 mInactiveLock.notify();

@@ -278,6 +278,7 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
 
     @Override
     public void onDestroy() {
+        disconnect();
         unregisterReceiver(mBluetoothReceiver);
         super.onDestroy();
     }
