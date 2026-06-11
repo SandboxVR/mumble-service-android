@@ -16,7 +16,8 @@ permissions:
 
 env:
   ANDROID_NDK_VERSION: "25.1.8937393"
-  ANDROID_BUILD_TOOLS_VERSION: "29.0.3"
+  # Keep these Android tool versions in sync with alvr_private's release-build.yml.
+  ANDROID_BUILD_TOOLS_VERSION: "33.0.0"
   ANDROID_PLATFORM_VERSION: "29"
   GRADLE_LEGACY_VERSION: "4.10.3"
 
@@ -138,6 +139,7 @@ jobs:
           sed -i 's/^APP_ABI :=.*/APP_ABI := arm64-v8a/' src/main/jni/Application.mk
           rm -rf src/main/libs src/main/obj
 
+          # Generate JNI libraries before assembleRelease snapshots jniLibs.
           ./gradlew --no-daemon ndkBuild
 
           test -f src/main/libs/arm64-v8a/libjnicelt11.so
@@ -157,15 +159,23 @@ jobs:
 
           unzip -Z1 "${aar_path}" | tee "${RUNNER_TEMP}/aar-files.txt"
 
-          grep -qx 'jni/arm64-v8a/libjnicelt11.so' "${RUNNER_TEMP}/aar-files.txt"
-          grep -qx 'jni/arm64-v8a/libjnicelt7.so' "${RUNNER_TEMP}/aar-files.txt"
-          grep -qx 'jni/arm64-v8a/libjniopus.so' "${RUNNER_TEMP}/aar-files.txt"
-          grep -qx 'jni/arm64-v8a/libjnispeex.so' "${RUNNER_TEMP}/aar-files.txt"
-          grep -qx 'libs/prov-1.51.0.0.jar' "${RUNNER_TEMP}/aar-files.txt"
-          grep -qx 'libs/pkix-1.51.0.0.jar' "${RUNNER_TEMP}/aar-files.txt"
+          require_aar_entry() {
+            if ! grep -Fqx "$1" "${RUNNER_TEMP}/aar-files.txt"; then
+              echo "::error::Missing required AAR entry: $1"
+              exit 1
+            fi
+          }
+
+          require_aar_entry 'jni/arm64-v8a/libjnicelt11.so'
+          require_aar_entry 'jni/arm64-v8a/libjnicelt7.so'
+          require_aar_entry 'jni/arm64-v8a/libjniopus.so'
+          require_aar_entry 'jni/arm64-v8a/libjnispeex.so'
+          require_aar_entry 'libs/prov-1.51.0.0.jar'
+          require_aar_entry 'libs/pkix-1.51.0.0.jar'
 
           if grep -Eq '^jni/(armeabi-v7a|x86|x86_64)/' "${RUNNER_TEMP}/aar-files.txt"; then
-            echo "Unexpected non-arm64 ABI in AAR"
+            echo "::error::Unexpected non-arm64 ABI in AAR"
+            grep -E '^jni/(armeabi-v7a|x86|x86_64)/' "${RUNNER_TEMP}/aar-files.txt"
             exit 1
           fi
 
