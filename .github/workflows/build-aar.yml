@@ -1,0 +1,165 @@
+name: Build AAR
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Tag, branch, or commit to build"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  ANDROID_NDK_VERSION: "25.1.8937393"
+  ANDROID_BUILD_TOOLS_VERSION: "29.0.3"
+  ANDROID_PLATFORM_VERSION: "29"
+  GRADLE_LEGACY_VERSION: "4.10.3"
+
+jobs:
+  aar:
+    name: Android AAR
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up Java 8 for SpongyCastle
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: "8"
+
+      - name: Download legacy Gradle
+        run: |
+          set -euo pipefail
+
+          gradle_zip="gradle-${GRADLE_LEGACY_VERSION}-bin.zip"
+          gradle_url="https://services.gradle.org/distributions/${gradle_zip}"
+
+          curl -L "${gradle_url}" -o "${RUNNER_TEMP}/${gradle_zip}"
+          curl -L "${gradle_url}.sha256" -o "${RUNNER_TEMP}/${gradle_zip}.sha256"
+
+          expected_hash="$(head -n 1 "${RUNNER_TEMP}/${gradle_zip}.sha256" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+          actual_hash="$(sha256sum "${RUNNER_TEMP}/${gradle_zip}" | awk '{print $1}')"
+
+          if [ "${actual_hash}" != "${expected_hash}" ]; then
+            echo "Gradle ${GRADLE_LEGACY_VERSION} checksum mismatch"
+            echo "Expected: ${expected_hash}"
+            echo "Actual:   ${actual_hash}"
+            exit 1
+          fi
+
+          unzip -q "${RUNNER_TEMP}/${gradle_zip}" -d "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/gradle-${GRADLE_LEGACY_VERSION}/bin" >> "${GITHUB_PATH}"
+
+      - name: Build custom SpongyCastle jars
+        working-directory: libs/humla-spongycastle
+        run: |
+          set -euo pipefail
+
+          java -version
+          javac -version
+          test -f "${JAVA_HOME}/lib/tools.jar"
+
+          gradle --no-daemon :prov:jar :pkix:jar
+
+          test -f prov/build/libs/prov-1.51.0.0.jar
+          test -f pkix/build/libs/pkix-1.51.0.0.jar
+
+      - name: Set up Java 11 for Android Gradle plugin
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: "11"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+
+      - name: Install Android SDK packages
+        run: |
+          set -euo pipefail
+
+          sdkmanager \
+            "platforms;android-${ANDROID_PLATFORM_VERSION}" \
+            "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+            "ndk;${ANDROID_NDK_VERSION}"
+
+      - name: Configure local Android SDK paths
+        run: |
+          set -euo pipefail
+
+          {
+            echo "sdk.dir=${ANDROID_HOME}"
+            echo "ndk.dir=${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}"
+          } > local.properties
+
+      - name: Build arm64 AAR
+        run: |
+          set -euo pipefail
+
+          sed -i 's/^APP_ABI :=.*/APP_ABI := arm64-v8a/' src/main/jni/Application.mk
+          rm -rf src/main/libs src/main/obj
+
+          ./gradlew --no-daemon assembleRelease
+
+      - name: Verify AAR contents
+        id: aar
+        run: |
+          set -euo pipefail
+
+          aar_path="build/outputs/aar/mumble-service-android-release.aar"
+          test -f "${aar_path}"
+
+          unzip -Z1 "${aar_path}" | tee "${RUNNER_TEMP}/aar-files.txt"
+
+          grep -qx 'jni/arm64-v8a/libjnicelt11.so' "${RUNNER_TEMP}/aar-files.txt"
+          grep -qx 'jni/arm64-v8a/libjnicelt7.so' "${RUNNER_TEMP}/aar-files.txt"
+          grep -qx 'jni/arm64-v8a/libjniopus.so' "${RUNNER_TEMP}/aar-files.txt"
+          grep -qx 'jni/arm64-v8a/libjnispeex.so' "${RUNNER_TEMP}/aar-files.txt"
+          grep -qx 'libs/prov-1.51.0.0.jar' "${RUNNER_TEMP}/aar-files.txt"
+          grep -qx 'libs/pkix-1.51.0.0.jar' "${RUNNER_TEMP}/aar-files.txt"
+
+          if grep -Eq '^jni/(armeabi-v7a|x86|x86_64)/' "${RUNNER_TEMP}/aar-files.txt"; then
+            echo "Unexpected non-arm64 ABI in AAR"
+            exit 1
+          fi
+
+          ref_name="${GITHUB_REF_NAME}"
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            ref_name="${{ inputs.ref }}"
+          fi
+          safe_ref_name="$(printf '%s' "${ref_name}" | tr '/:@ ' '----')"
+          output_name="mumble-service-android-${safe_ref_name}-arm64-v8a.aar"
+
+          cp "${aar_path}" "${output_name}"
+          sha256sum "${output_name}" | tee "${output_name}.sha256"
+
+          echo "output_name=${output_name}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload AAR artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: mumble-service-android-aar
+          path: |
+            ${{ steps.aar.outputs.output_name }}
+            ${{ steps.aar.outputs.output_name }}.sha256
+          if-no-files-found: error
+
+      - name: Upload AAR to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
+        with:
+          files: |
+            ${{ steps.aar.outputs.output_name }}
+            ${{ steps.aar.outputs.output_name }}.sha256
+          fail_on_unmatched_files: true
