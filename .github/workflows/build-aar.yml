@@ -179,12 +179,7 @@ jobs:
             exit 1
           fi
 
-          ref_name="${GITHUB_REF_NAME}"
-          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-            ref_name="${{ inputs.ref }}"
-          fi
-          safe_ref_name="$(printf '%s' "${ref_name}" | tr '/:@ ' '----')"
-          output_name="mumble-service-android-${safe_ref_name}-arm64-v8a.aar"
+          output_name="mumble-service-android.aar"
 
           cp "${aar_path}" "${output_name}"
           sha256sum "${output_name}" | tee "${output_name}.sha256"
