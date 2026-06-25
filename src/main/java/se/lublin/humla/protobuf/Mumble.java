@@ -20,22 +20,43 @@ public final class Mumble {
 
     /**
      * <pre>
-     * 2-byte Major, 1-byte Minor and 1-byte Patch version number.
+     * Legacy version number format.
      * </pre>
      *
-     * <code>optional uint32 version = 1;</code>
-     * @return Whether the version field is set.
+     * <code>optional uint32 version_v1 = 1;</code>
+     * @return Whether the versionV1 field is set.
      */
-    boolean hasVersion();
+    boolean hasVersionV1();
     /**
      * <pre>
-     * 2-byte Major, 1-byte Minor and 1-byte Patch version number.
+     * Legacy version number format.
      * </pre>
      *
-     * <code>optional uint32 version = 1;</code>
-     * @return The version.
+     * <code>optional uint32 version_v1 = 1;</code>
+     * @return The versionV1.
      */
-    int getVersion();
+    int getVersionV1();
+
+    /**
+     * <pre>
+     * New version number format.
+     * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+     * </pre>
+     *
+     * <code>optional uint64 version_v2 = 5;</code>
+     * @return Whether the versionV2 field is set.
+     */
+    boolean hasVersionV2();
+    /**
+     * <pre>
+     * New version number format.
+     * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+     * </pre>
+     *
+     * <code>optional uint64 version_v2 = 5;</code>
+     * @return The versionV2.
+     */
+    long getVersionV2();
 
     /**
      * <pre>
@@ -175,25 +196,30 @@ public final class Mumble {
               break;
             case 8: {
               bitField0_ |= 0x00000001;
-              version_ = input.readUInt32();
+              versionV1_ = input.readUInt32();
               break;
             }
             case 18: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000002;
+              bitField0_ |= 0x00000004;
               release_ = bs;
               break;
             }
             case 26: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000008;
               os_ = bs;
               break;
             }
             case 34: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000008;
+              bitField0_ |= 0x00000010;
               osVersion_ = bs;
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000002;
+              versionV2_ = input.readUInt64();
               break;
             }
             default: {
@@ -229,29 +255,56 @@ public final class Mumble {
     }
 
     private int bitField0_;
-    public static final int VERSION_FIELD_NUMBER = 1;
-    private int version_;
+    public static final int VERSION_V1_FIELD_NUMBER = 1;
+    private int versionV1_;
     /**
      * <pre>
-     * 2-byte Major, 1-byte Minor and 1-byte Patch version number.
+     * Legacy version number format.
      * </pre>
      *
-     * <code>optional uint32 version = 1;</code>
-     * @return Whether the version field is set.
+     * <code>optional uint32 version_v1 = 1;</code>
+     * @return Whether the versionV1 field is set.
      */
-    public boolean hasVersion() {
+    public boolean hasVersionV1() {
       return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <pre>
-     * 2-byte Major, 1-byte Minor and 1-byte Patch version number.
+     * Legacy version number format.
      * </pre>
      *
-     * <code>optional uint32 version = 1;</code>
-     * @return The version.
+     * <code>optional uint32 version_v1 = 1;</code>
+     * @return The versionV1.
      */
-    public int getVersion() {
-      return version_;
+    public int getVersionV1() {
+      return versionV1_;
+    }
+
+    public static final int VERSION_V2_FIELD_NUMBER = 5;
+    private long versionV2_;
+    /**
+     * <pre>
+     * New version number format.
+     * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+     * </pre>
+     *
+     * <code>optional uint64 version_v2 = 5;</code>
+     * @return Whether the versionV2 field is set.
+     */
+    public boolean hasVersionV2() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <pre>
+     * New version number format.
+     * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+     * </pre>
+     *
+     * <code>optional uint64 version_v2 = 5;</code>
+     * @return The versionV2.
+     */
+    public long getVersionV2() {
+      return versionV2_;
     }
 
     public static final int RELEASE_FIELD_NUMBER = 2;
@@ -265,7 +318,7 @@ public final class Mumble {
      * @return Whether the release field is set.
      */
     public boolean hasRelease() {
-      return ((bitField0_ & 0x00000002) != 0);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <pre>
@@ -280,7 +333,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -301,7 +354,7 @@ public final class Mumble {
         getReleaseBytes() {
       java.lang.Object ref = release_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         release_ = b;
@@ -322,7 +375,7 @@ public final class Mumble {
      * @return Whether the os field is set.
      */
     public boolean hasOs() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -337,7 +390,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -358,7 +411,7 @@ public final class Mumble {
         getOsBytes() {
       java.lang.Object ref = os_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         os_ = b;
@@ -379,7 +432,7 @@ public final class Mumble {
      * @return Whether the osVersion field is set.
      */
     public boolean hasOsVersion() {
-      return ((bitField0_ & 0x00000008) != 0);
+      return ((bitField0_ & 0x00000010) != 0);
     }
     /**
      * <pre>
@@ -394,7 +447,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -415,7 +468,7 @@ public final class Mumble {
         getOsVersionBytes() {
       java.lang.Object ref = osVersion_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         osVersion_ = b;
@@ -440,16 +493,19 @@ public final class Mumble {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeUInt32(1, version_);
-      }
-      if (((bitField0_ & 0x00000002) != 0)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, release_);
+        output.writeUInt32(1, versionV1_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, os_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, release_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, os_);
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, osVersion_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeUInt64(5, versionV2_);
       }
       unknownFields.writeTo(output);
     }
@@ -462,16 +518,20 @@ public final class Mumble {
       size = 0;
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(1, version_);
-      }
-      if (((bitField0_ & 0x00000002) != 0)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, release_);
+          .computeUInt32Size(1, versionV1_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, os_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, release_);
       }
       if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, os_);
+      }
+      if (((bitField0_ & 0x00000010) != 0)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, osVersion_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(5, versionV2_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -488,10 +548,15 @@ public final class Mumble {
       }
       se.lublin.humla.protobuf.Mumble.Version other = (se.lublin.humla.protobuf.Mumble.Version) obj;
 
-      if (hasVersion() != other.hasVersion()) return false;
-      if (hasVersion()) {
-        if (getVersion()
-            != other.getVersion()) return false;
+      if (hasVersionV1() != other.hasVersionV1()) return false;
+      if (hasVersionV1()) {
+        if (getVersionV1()
+            != other.getVersionV1()) return false;
+      }
+      if (hasVersionV2() != other.hasVersionV2()) return false;
+      if (hasVersionV2()) {
+        if (getVersionV2()
+            != other.getVersionV2()) return false;
       }
       if (hasRelease() != other.hasRelease()) return false;
       if (hasRelease()) {
@@ -519,9 +584,14 @@ public final class Mumble {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasVersion()) {
-        hash = (37 * hash) + VERSION_FIELD_NUMBER;
-        hash = (53 * hash) + getVersion();
+      if (hasVersionV1()) {
+        hash = (37 * hash) + VERSION_V1_FIELD_NUMBER;
+        hash = (53 * hash) + getVersionV1();
+      }
+      if (hasVersionV2()) {
+        hash = (37 * hash) + VERSION_V2_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getVersionV2());
       }
       if (hasRelease()) {
         hash = (37 * hash) + RELEASE_FIELD_NUMBER;
@@ -668,14 +738,16 @@ public final class Mumble {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        version_ = 0;
+        versionV1_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        release_ = "";
+        versionV2_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
-        os_ = "";
+        release_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
-        osVersion_ = "";
+        os_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
+        osVersion_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -705,19 +777,23 @@ public final class Mumble {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.version_ = version_;
+          result.versionV1_ = versionV1_;
           to_bitField0_ |= 0x00000001;
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
+          result.versionV2_ = versionV2_;
           to_bitField0_ |= 0x00000002;
         }
-        result.release_ = release_;
         if (((from_bitField0_ & 0x00000004) != 0)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.os_ = os_;
+        result.release_ = release_;
         if (((from_bitField0_ & 0x00000008) != 0)) {
           to_bitField0_ |= 0x00000008;
+        }
+        result.os_ = os_;
+        if (((from_bitField0_ & 0x00000010) != 0)) {
+          to_bitField0_ |= 0x00000010;
         }
         result.osVersion_ = osVersion_;
         result.bitField0_ = to_bitField0_;
@@ -769,21 +845,24 @@ public final class Mumble {
 
       public Builder mergeFrom(se.lublin.humla.protobuf.Mumble.Version other) {
         if (other == se.lublin.humla.protobuf.Mumble.Version.getDefaultInstance()) return this;
-        if (other.hasVersion()) {
-          setVersion(other.getVersion());
+        if (other.hasVersionV1()) {
+          setVersionV1(other.getVersionV1());
+        }
+        if (other.hasVersionV2()) {
+          setVersionV2(other.getVersionV2());
         }
         if (other.hasRelease()) {
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000004;
           release_ = other.release_;
           onChanged();
         }
         if (other.hasOs()) {
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000008;
           os_ = other.os_;
           onChanged();
         }
         if (other.hasOsVersion()) {
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000010;
           osVersion_ = other.osVersion_;
           onChanged();
         }
@@ -817,55 +896,112 @@ public final class Mumble {
       }
       private int bitField0_;
 
-      private int version_ ;
+      private int versionV1_ ;
       /**
        * <pre>
-       * 2-byte Major, 1-byte Minor and 1-byte Patch version number.
+       * Legacy version number format.
        * </pre>
        *
-       * <code>optional uint32 version = 1;</code>
-       * @return Whether the version field is set.
+       * <code>optional uint32 version_v1 = 1;</code>
+       * @return Whether the versionV1 field is set.
        */
-      public boolean hasVersion() {
+      public boolean hasVersionV1() {
         return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <pre>
-       * 2-byte Major, 1-byte Minor and 1-byte Patch version number.
+       * Legacy version number format.
        * </pre>
        *
-       * <code>optional uint32 version = 1;</code>
-       * @return The version.
+       * <code>optional uint32 version_v1 = 1;</code>
+       * @return The versionV1.
        */
-      public int getVersion() {
-        return version_;
+      public int getVersionV1() {
+        return versionV1_;
       }
       /**
        * <pre>
-       * 2-byte Major, 1-byte Minor and 1-byte Patch version number.
+       * Legacy version number format.
        * </pre>
        *
-       * <code>optional uint32 version = 1;</code>
-       * @param value The version to set.
+       * <code>optional uint32 version_v1 = 1;</code>
+       * @param value The versionV1 to set.
        * @return This builder for chaining.
        */
-      public Builder setVersion(int value) {
+      public Builder setVersionV1(int value) {
         bitField0_ |= 0x00000001;
-        version_ = value;
+        versionV1_ = value;
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * 2-byte Major, 1-byte Minor and 1-byte Patch version number.
+       * Legacy version number format.
        * </pre>
        *
-       * <code>optional uint32 version = 1;</code>
+       * <code>optional uint32 version_v1 = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearVersion() {
+      public Builder clearVersionV1() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        version_ = 0;
+        versionV1_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private long versionV2_ ;
+      /**
+       * <pre>
+       * New version number format.
+       * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+       * </pre>
+       *
+       * <code>optional uint64 version_v2 = 5;</code>
+       * @return Whether the versionV2 field is set.
+       */
+      public boolean hasVersionV2() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <pre>
+       * New version number format.
+       * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+       * </pre>
+       *
+       * <code>optional uint64 version_v2 = 5;</code>
+       * @return The versionV2.
+       */
+      public long getVersionV2() {
+        return versionV2_;
+      }
+      /**
+       * <pre>
+       * New version number format.
+       * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+       * </pre>
+       *
+       * <code>optional uint64 version_v2 = 5;</code>
+       * @param value The versionV2 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setVersionV2(long value) {
+        bitField0_ |= 0x00000002;
+        versionV2_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * New version number format.
+       * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+       * </pre>
+       *
+       * <code>optional uint64 version_v2 = 5;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearVersionV2() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        versionV2_ = 0L;
         onChanged();
         return this;
       }
@@ -880,7 +1016,7 @@ public final class Mumble {
        * @return Whether the release field is set.
        */
       public boolean hasRelease() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <pre>
@@ -916,7 +1052,7 @@ public final class Mumble {
           getReleaseBytes() {
         java.lang.Object ref = release_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           release_ = b;
@@ -939,7 +1075,7 @@ public final class Mumble {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000004;
         release_ = value;
         onChanged();
         return this;
@@ -953,7 +1089,7 @@ public final class Mumble {
        * @return This builder for chaining.
        */
       public Builder clearRelease() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         release_ = getDefaultInstance().getRelease();
         onChanged();
         return this;
@@ -972,7 +1108,7 @@ public final class Mumble {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000002;
+  bitField0_ |= 0x00000004;
         release_ = value;
         onChanged();
         return this;
@@ -988,7 +1124,7 @@ public final class Mumble {
        * @return Whether the os field is set.
        */
       public boolean hasOs() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <pre>
@@ -1024,7 +1160,7 @@ public final class Mumble {
           getOsBytes() {
         java.lang.Object ref = os_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           os_ = b;
@@ -1047,7 +1183,7 @@ public final class Mumble {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000008;
         os_ = value;
         onChanged();
         return this;
@@ -1061,7 +1197,7 @@ public final class Mumble {
        * @return This builder for chaining.
        */
       public Builder clearOs() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         os_ = getDefaultInstance().getOs();
         onChanged();
         return this;
@@ -1080,7 +1216,7 @@ public final class Mumble {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000008;
         os_ = value;
         onChanged();
         return this;
@@ -1096,7 +1232,7 @@ public final class Mumble {
        * @return Whether the osVersion field is set.
        */
       public boolean hasOsVersion() {
-        return ((bitField0_ & 0x00000008) != 0);
+        return ((bitField0_ & 0x00000010) != 0);
       }
       /**
        * <pre>
@@ -1132,7 +1268,7 @@ public final class Mumble {
           getOsVersionBytes() {
         java.lang.Object ref = osVersion_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           osVersion_ = b;
@@ -1155,7 +1291,7 @@ public final class Mumble {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000010;
         osVersion_ = value;
         onChanged();
         return this;
@@ -1169,7 +1305,7 @@ public final class Mumble {
        * @return This builder for chaining.
        */
       public Builder clearOsVersion() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         osVersion_ = getDefaultInstance().getOsVersion();
         onChanged();
         return this;
@@ -1188,7 +1324,7 @@ public final class Mumble {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000010;
         osVersion_ = value;
         onChanged();
         return this;
@@ -1958,6 +2094,25 @@ public final class Mumble {
      * @return The opus.
      */
     boolean getOpus();
+
+    /**
+     * <pre>
+     * 0 = REGULAR, 1 = BOT
+     * </pre>
+     *
+     * <code>optional int32 client_type = 6 [default = 0];</code>
+     * @return Whether the clientType field is set.
+     */
+    boolean hasClientType();
+    /**
+     * <pre>
+     * 0 = REGULAR, 1 = BOT
+     * </pre>
+     *
+     * <code>optional int32 client_type = 6 [default = 0];</code>
+     * @return The clientType.
+     */
+    int getClientType();
   }
   /**
    * <pre>
@@ -2060,6 +2215,11 @@ public final class Mumble {
               opus_ = input.readBool();
               break;
             }
+            case 48: {
+              bitField0_ |= 0x00000008;
+              clientType_ = input.readInt32();
+              break;
+            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -2125,7 +2285,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -2146,7 +2306,7 @@ public final class Mumble {
         getUsernameBytes() {
       java.lang.Object ref = username_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         username_ = b;
@@ -2182,7 +2342,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -2203,7 +2363,7 @@ public final class Mumble {
         getPasswordBytes() {
       java.lang.Object ref = password_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         password_ = b;
@@ -2319,6 +2479,31 @@ public final class Mumble {
       return opus_;
     }
 
+    public static final int CLIENT_TYPE_FIELD_NUMBER = 6;
+    private int clientType_;
+    /**
+     * <pre>
+     * 0 = REGULAR, 1 = BOT
+     * </pre>
+     *
+     * <code>optional int32 client_type = 6 [default = 0];</code>
+     * @return Whether the clientType field is set.
+     */
+    public boolean hasClientType() {
+      return ((bitField0_ & 0x00000008) != 0);
+    }
+    /**
+     * <pre>
+     * 0 = REGULAR, 1 = BOT
+     * </pre>
+     *
+     * <code>optional int32 client_type = 6 [default = 0];</code>
+     * @return The clientType.
+     */
+    public int getClientType() {
+      return clientType_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -2347,6 +2532,9 @@ public final class Mumble {
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         output.writeBool(5, opus_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        output.writeInt32(6, clientType_);
       }
       unknownFields.writeTo(output);
     }
@@ -2384,6 +2572,10 @@ public final class Mumble {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(5, opus_);
       }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(6, clientType_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -2418,6 +2610,11 @@ public final class Mumble {
         if (getOpus()
             != other.getOpus()) return false;
       }
+      if (hasClientType() != other.hasClientType()) return false;
+      if (hasClientType()) {
+        if (getClientType()
+            != other.getClientType()) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -2449,6 +2646,10 @@ public final class Mumble {
         hash = (37 * hash) + OPUS_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getOpus());
+      }
+      if (hasClientType()) {
+        hash = (37 * hash) + CLIENT_TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getClientType();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -2597,6 +2798,8 @@ public final class Mumble {
         bitField0_ = (bitField0_ & ~0x00000008);
         opus_ = false;
         bitField0_ = (bitField0_ & ~0x00000010);
+        clientType_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -2646,6 +2849,10 @@ public final class Mumble {
         if (((from_bitField0_ & 0x00000010) != 0)) {
           result.opus_ = opus_;
           to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00000020) != 0)) {
+          result.clientType_ = clientType_;
+          to_bitField0_ |= 0x00000008;
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -2729,6 +2936,9 @@ public final class Mumble {
         if (other.hasOpus()) {
           setOpus(other.getOpus());
         }
+        if (other.hasClientType()) {
+          setClientType(other.getClientType());
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -2805,7 +3015,7 @@ public final class Mumble {
           getUsernameBytes() {
         java.lang.Object ref = username_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           username_ = b;
@@ -2913,7 +3123,7 @@ public final class Mumble {
           getPasswordBytes() {
         java.lang.Object ref = password_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           password_ = b;
@@ -3260,6 +3470,59 @@ public final class Mumble {
       public Builder clearOpus() {
         bitField0_ = (bitField0_ & ~0x00000010);
         opus_ = false;
+        onChanged();
+        return this;
+      }
+
+      private int clientType_ ;
+      /**
+       * <pre>
+       * 0 = REGULAR, 1 = BOT
+       * </pre>
+       *
+       * <code>optional int32 client_type = 6 [default = 0];</code>
+       * @return Whether the clientType field is set.
+       */
+      public boolean hasClientType() {
+        return ((bitField0_ & 0x00000020) != 0);
+      }
+      /**
+       * <pre>
+       * 0 = REGULAR, 1 = BOT
+       * </pre>
+       *
+       * <code>optional int32 client_type = 6 [default = 0];</code>
+       * @return The clientType.
+       */
+      public int getClientType() {
+        return clientType_;
+      }
+      /**
+       * <pre>
+       * 0 = REGULAR, 1 = BOT
+       * </pre>
+       *
+       * <code>optional int32 client_type = 6 [default = 0];</code>
+       * @param value The clientType to set.
+       * @return This builder for chaining.
+       */
+      public Builder setClientType(int value) {
+        bitField0_ |= 0x00000020;
+        clientType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * 0 = REGULAR, 1 = BOT
+       * </pre>
+       *
+       * <code>optional int32 client_type = 6 [default = 0];</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearClientType() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        clientType_ = 0;
         onChanged();
         return this;
       }
@@ -5595,7 +5858,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -5616,7 +5879,7 @@ public final class Mumble {
         getReasonBytes() {
       java.lang.Object ref = reason_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         reason_ = b;
@@ -6073,7 +6336,7 @@ public final class Mumble {
           getReasonBytes() {
         java.lang.Object ref = reason_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           reason_ = b;
@@ -6261,6 +6524,9 @@ public final class Mumble {
     /**
      * <pre>
      * Current user permissions in the root channel.
+     * Note: The permissions data type usually is uin32 (e.g. in PermissionQuery and PermissionDenied messages). Here
+     * it is uint64 because of an oversight in the past. Nonetheless it should never exceed the uin32 range.
+     * See also: https://github.com/mumble-voip/mumble/issues/5139
      * </pre>
      *
      * <code>optional uint64 permissions = 4;</code>
@@ -6270,6 +6536,9 @@ public final class Mumble {
     /**
      * <pre>
      * Current user permissions in the root channel.
+     * Note: The permissions data type usually is uin32 (e.g. in PermissionQuery and PermissionDenied messages). Here
+     * it is uint64 because of an oversight in the past. Nonetheless it should never exceed the uin32 range.
+     * See also: https://github.com/mumble-voip/mumble/issues/5139
      * </pre>
      *
      * <code>optional uint64 permissions = 4;</code>
@@ -6459,7 +6728,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -6480,7 +6749,7 @@ public final class Mumble {
         getWelcomeTextBytes() {
       java.lang.Object ref = welcomeText_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         welcomeText_ = b;
@@ -6495,6 +6764,9 @@ public final class Mumble {
     /**
      * <pre>
      * Current user permissions in the root channel.
+     * Note: The permissions data type usually is uin32 (e.g. in PermissionQuery and PermissionDenied messages). Here
+     * it is uint64 because of an oversight in the past. Nonetheless it should never exceed the uin32 range.
+     * See also: https://github.com/mumble-voip/mumble/issues/5139
      * </pre>
      *
      * <code>optional uint64 permissions = 4;</code>
@@ -6506,6 +6778,9 @@ public final class Mumble {
     /**
      * <pre>
      * Current user permissions in the root channel.
+     * Note: The permissions data type usually is uin32 (e.g. in PermissionQuery and PermissionDenied messages). Here
+     * it is uint64 because of an oversight in the past. Nonetheless it should never exceed the uin32 range.
+     * See also: https://github.com/mumble-voip/mumble/issues/5139
      * </pre>
      *
      * <code>optional uint64 permissions = 4;</code>
@@ -7063,7 +7338,7 @@ public final class Mumble {
           getWelcomeTextBytes() {
         java.lang.Object ref = welcomeText_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           welcomeText_ = b;
@@ -7129,6 +7404,9 @@ public final class Mumble {
       /**
        * <pre>
        * Current user permissions in the root channel.
+       * Note: The permissions data type usually is uin32 (e.g. in PermissionQuery and PermissionDenied messages). Here
+       * it is uint64 because of an oversight in the past. Nonetheless it should never exceed the uin32 range.
+       * See also: https://github.com/mumble-voip/mumble/issues/5139
        * </pre>
        *
        * <code>optional uint64 permissions = 4;</code>
@@ -7140,6 +7418,9 @@ public final class Mumble {
       /**
        * <pre>
        * Current user permissions in the root channel.
+       * Note: The permissions data type usually is uin32 (e.g. in PermissionQuery and PermissionDenied messages). Here
+       * it is uint64 because of an oversight in the past. Nonetheless it should never exceed the uin32 range.
+       * See also: https://github.com/mumble-voip/mumble/issues/5139
        * </pre>
        *
        * <code>optional uint64 permissions = 4;</code>
@@ -7151,6 +7432,9 @@ public final class Mumble {
       /**
        * <pre>
        * Current user permissions in the root channel.
+       * Note: The permissions data type usually is uin32 (e.g. in PermissionQuery and PermissionDenied messages). Here
+       * it is uint64 because of an oversight in the past. Nonetheless it should never exceed the uin32 range.
+       * See also: https://github.com/mumble-voip/mumble/issues/5139
        * </pre>
        *
        * <code>optional uint64 permissions = 4;</code>
@@ -7166,6 +7450,9 @@ public final class Mumble {
       /**
        * <pre>
        * Current user permissions in the root channel.
+       * Note: The permissions data type usually is uin32 (e.g. in PermissionQuery and PermissionDenied messages). Here
+       * it is uint64 because of an oversight in the past. Nonetheless it should never exceed the uin32 range.
+       * See also: https://github.com/mumble-voip/mumble/issues/5139
        * </pre>
        *
        * <code>optional uint64 permissions = 4;</code>
@@ -8038,6 +8325,44 @@ public final class Mumble {
      * @return The maxUsers.
      */
     int getMaxUsers();
+
+    /**
+     * <pre>
+     * Whether this channel has enter restrictions (ACL denying ENTER) set
+     * </pre>
+     *
+     * <code>optional bool is_enter_restricted = 12;</code>
+     * @return Whether the isEnterRestricted field is set.
+     */
+    boolean hasIsEnterRestricted();
+    /**
+     * <pre>
+     * Whether this channel has enter restrictions (ACL denying ENTER) set
+     * </pre>
+     *
+     * <code>optional bool is_enter_restricted = 12;</code>
+     * @return The isEnterRestricted.
+     */
+    boolean getIsEnterRestricted();
+
+    /**
+     * <pre>
+     * Whether the receiver of this msg is considered to be able to enter this channel
+     * </pre>
+     *
+     * <code>optional bool can_enter = 13;</code>
+     * @return Whether the canEnter field is set.
+     */
+    boolean hasCanEnter();
+    /**
+     * <pre>
+     * Whether the receiver of this msg is considered to be able to enter this channel
+     * </pre>
+     *
+     * <code>optional bool can_enter = 13;</code>
+     * @return The canEnter.
+     */
+    boolean getCanEnter();
   }
   /**
    * <pre>
@@ -8202,6 +8527,16 @@ public final class Mumble {
               maxUsers_ = input.readUInt32();
               break;
             }
+            case 96: {
+              bitField0_ |= 0x00000100;
+              isEnterRestricted_ = input.readBool();
+              break;
+            }
+            case 104: {
+              bitField0_ |= 0x00000200;
+              canEnter_ = input.readBool();
+              break;
+            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -8320,7 +8655,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -8341,7 +8676,7 @@ public final class Mumble {
         getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         name_ = b;
@@ -8420,7 +8755,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -8442,7 +8777,7 @@ public final class Mumble {
         getDescriptionBytes() {
       java.lang.Object ref = description_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         description_ = b;
@@ -8632,6 +8967,56 @@ public final class Mumble {
       return maxUsers_;
     }
 
+    public static final int IS_ENTER_RESTRICTED_FIELD_NUMBER = 12;
+    private boolean isEnterRestricted_;
+    /**
+     * <pre>
+     * Whether this channel has enter restrictions (ACL denying ENTER) set
+     * </pre>
+     *
+     * <code>optional bool is_enter_restricted = 12;</code>
+     * @return Whether the isEnterRestricted field is set.
+     */
+    public boolean hasIsEnterRestricted() {
+      return ((bitField0_ & 0x00000100) != 0);
+    }
+    /**
+     * <pre>
+     * Whether this channel has enter restrictions (ACL denying ENTER) set
+     * </pre>
+     *
+     * <code>optional bool is_enter_restricted = 12;</code>
+     * @return The isEnterRestricted.
+     */
+    public boolean getIsEnterRestricted() {
+      return isEnterRestricted_;
+    }
+
+    public static final int CAN_ENTER_FIELD_NUMBER = 13;
+    private boolean canEnter_;
+    /**
+     * <pre>
+     * Whether the receiver of this msg is considered to be able to enter this channel
+     * </pre>
+     *
+     * <code>optional bool can_enter = 13;</code>
+     * @return Whether the canEnter field is set.
+     */
+    public boolean hasCanEnter() {
+      return ((bitField0_ & 0x00000200) != 0);
+    }
+    /**
+     * <pre>
+     * Whether the receiver of this msg is considered to be able to enter this channel
+     * </pre>
+     *
+     * <code>optional bool can_enter = 13;</code>
+     * @return The canEnter.
+     */
+    public boolean getCanEnter() {
+      return canEnter_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -8678,6 +9063,12 @@ public final class Mumble {
       }
       if (((bitField0_ & 0x00000080) != 0)) {
         output.writeUInt32(11, maxUsers_);
+      }
+      if (((bitField0_ & 0x00000100) != 0)) {
+        output.writeBool(12, isEnterRestricted_);
+      }
+      if (((bitField0_ & 0x00000200) != 0)) {
+        output.writeBool(13, canEnter_);
       }
       unknownFields.writeTo(output);
     }
@@ -8745,6 +9136,14 @@ public final class Mumble {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(11, maxUsers_);
       }
+      if (((bitField0_ & 0x00000100) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(12, isEnterRestricted_);
+      }
+      if (((bitField0_ & 0x00000200) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(13, canEnter_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -8806,6 +9205,16 @@ public final class Mumble {
         if (getMaxUsers()
             != other.getMaxUsers()) return false;
       }
+      if (hasIsEnterRestricted() != other.hasIsEnterRestricted()) return false;
+      if (hasIsEnterRestricted()) {
+        if (getIsEnterRestricted()
+            != other.getIsEnterRestricted()) return false;
+      }
+      if (hasCanEnter() != other.hasCanEnter()) return false;
+      if (hasCanEnter()) {
+        if (getCanEnter()
+            != other.getCanEnter()) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -8861,6 +9270,16 @@ public final class Mumble {
       if (hasMaxUsers()) {
         hash = (37 * hash) + MAX_USERS_FIELD_NUMBER;
         hash = (53 * hash) + getMaxUsers();
+      }
+      if (hasIsEnterRestricted()) {
+        hash = (37 * hash) + IS_ENTER_RESTRICTED_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getIsEnterRestricted());
+      }
+      if (hasCanEnter()) {
+        hash = (37 * hash) + CAN_ENTER_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getCanEnter());
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -9023,6 +9442,10 @@ public final class Mumble {
         bitField0_ = (bitField0_ & ~0x00000200);
         maxUsers_ = 0;
         bitField0_ = (bitField0_ & ~0x00000400);
+        isEnterRestricted_ = false;
+        bitField0_ = (bitField0_ & ~0x00000800);
+        canEnter_ = false;
+        bitField0_ = (bitField0_ & ~0x00001000);
         return this;
       }
 
@@ -9097,6 +9520,14 @@ public final class Mumble {
         if (((from_bitField0_ & 0x00000400) != 0)) {
           result.maxUsers_ = maxUsers_;
           to_bitField0_ |= 0x00000080;
+        }
+        if (((from_bitField0_ & 0x00000800) != 0)) {
+          result.isEnterRestricted_ = isEnterRestricted_;
+          to_bitField0_ |= 0x00000100;
+        }
+        if (((from_bitField0_ & 0x00001000) != 0)) {
+          result.canEnter_ = canEnter_;
+          to_bitField0_ |= 0x00000200;
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -9204,6 +9635,12 @@ public final class Mumble {
         }
         if (other.hasMaxUsers()) {
           setMaxUsers(other.getMaxUsers());
+        }
+        if (other.hasIsEnterRestricted()) {
+          setIsEnterRestricted(other.getIsEnterRestricted());
+        }
+        if (other.hasCanEnter()) {
+          setCanEnter(other.getCanEnter());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -9387,7 +9824,7 @@ public final class Mumble {
           getNameBytes() {
         java.lang.Object ref = name_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           name_ = b;
@@ -9612,7 +10049,7 @@ public final class Mumble {
           getDescriptionBytes() {
         java.lang.Object ref = description_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           description_ = b;
@@ -10113,6 +10550,112 @@ public final class Mumble {
         onChanged();
         return this;
       }
+
+      private boolean isEnterRestricted_ ;
+      /**
+       * <pre>
+       * Whether this channel has enter restrictions (ACL denying ENTER) set
+       * </pre>
+       *
+       * <code>optional bool is_enter_restricted = 12;</code>
+       * @return Whether the isEnterRestricted field is set.
+       */
+      public boolean hasIsEnterRestricted() {
+        return ((bitField0_ & 0x00000800) != 0);
+      }
+      /**
+       * <pre>
+       * Whether this channel has enter restrictions (ACL denying ENTER) set
+       * </pre>
+       *
+       * <code>optional bool is_enter_restricted = 12;</code>
+       * @return The isEnterRestricted.
+       */
+      public boolean getIsEnterRestricted() {
+        return isEnterRestricted_;
+      }
+      /**
+       * <pre>
+       * Whether this channel has enter restrictions (ACL denying ENTER) set
+       * </pre>
+       *
+       * <code>optional bool is_enter_restricted = 12;</code>
+       * @param value The isEnterRestricted to set.
+       * @return This builder for chaining.
+       */
+      public Builder setIsEnterRestricted(boolean value) {
+        bitField0_ |= 0x00000800;
+        isEnterRestricted_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Whether this channel has enter restrictions (ACL denying ENTER) set
+       * </pre>
+       *
+       * <code>optional bool is_enter_restricted = 12;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearIsEnterRestricted() {
+        bitField0_ = (bitField0_ & ~0x00000800);
+        isEnterRestricted_ = false;
+        onChanged();
+        return this;
+      }
+
+      private boolean canEnter_ ;
+      /**
+       * <pre>
+       * Whether the receiver of this msg is considered to be able to enter this channel
+       * </pre>
+       *
+       * <code>optional bool can_enter = 13;</code>
+       * @return Whether the canEnter field is set.
+       */
+      public boolean hasCanEnter() {
+        return ((bitField0_ & 0x00001000) != 0);
+      }
+      /**
+       * <pre>
+       * Whether the receiver of this msg is considered to be able to enter this channel
+       * </pre>
+       *
+       * <code>optional bool can_enter = 13;</code>
+       * @return The canEnter.
+       */
+      public boolean getCanEnter() {
+        return canEnter_;
+      }
+      /**
+       * <pre>
+       * Whether the receiver of this msg is considered to be able to enter this channel
+       * </pre>
+       *
+       * <code>optional bool can_enter = 13;</code>
+       * @param value The canEnter to set.
+       * @return This builder for chaining.
+       */
+      public Builder setCanEnter(boolean value) {
+        bitField0_ |= 0x00001000;
+        canEnter_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Whether the receiver of this msg is considered to be able to enter this channel
+       * </pre>
+       *
+       * <code>optional bool can_enter = 13;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearCanEnter() {
+        bitField0_ = (bitField0_ & ~0x00001000);
+        canEnter_ = false;
+        onChanged();
+        return this;
+      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -10447,7 +10990,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -10468,7 +11011,7 @@ public final class Mumble {
         getReasonBytes() {
       java.lang.Object ref = reason_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         reason_ = b;
@@ -11067,7 +11610,7 @@ public final class Mumble {
           getReasonBytes() {
         java.lang.Object ref = reason_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           reason_ = b;
@@ -11466,7 +12009,7 @@ public final class Mumble {
      * The positional audio plugin identifier.
      * Positional audio information is only sent to users who share
      * identical plugin contexts.
-     * This value is not trasmitted to clients.
+     * This value is not transmitted to clients.
      * </pre>
      *
      * <code>optional bytes plugin_context = 12;</code>
@@ -11478,7 +12021,7 @@ public final class Mumble {
      * The positional audio plugin identifier.
      * Positional audio information is only sent to users who share
      * identical plugin contexts.
-     * This value is not trasmitted to clients.
+     * This value is not transmitted to clients.
      * </pre>
      *
      * <code>optional bytes plugin_context = 12;</code>
@@ -11651,6 +12194,149 @@ public final class Mumble {
      * @return The recording.
      */
     boolean getRecording();
+
+    /**
+     * <pre>
+     * A list of temporary access tokens to be respected when processing this request.
+     * </pre>
+     *
+     * <code>repeated string temporary_access_tokens = 20;</code>
+     * @return A list containing the temporaryAccessTokens.
+     */
+    java.util.List<java.lang.String>
+        getTemporaryAccessTokensList();
+    /**
+     * <pre>
+     * A list of temporary access tokens to be respected when processing this request.
+     * </pre>
+     *
+     * <code>repeated string temporary_access_tokens = 20;</code>
+     * @return The count of temporaryAccessTokens.
+     */
+    int getTemporaryAccessTokensCount();
+    /**
+     * <pre>
+     * A list of temporary access tokens to be respected when processing this request.
+     * </pre>
+     *
+     * <code>repeated string temporary_access_tokens = 20;</code>
+     * @param index The index of the element to return.
+     * @return The temporaryAccessTokens at the given index.
+     */
+    java.lang.String getTemporaryAccessTokens(int index);
+    /**
+     * <pre>
+     * A list of temporary access tokens to be respected when processing this request.
+     * </pre>
+     *
+     * <code>repeated string temporary_access_tokens = 20;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the temporaryAccessTokens at the given index.
+     */
+    com.google.protobuf.ByteString
+        getTemporaryAccessTokensBytes(int index);
+
+    /**
+     * <pre>
+     * A list of channels the user wants to start listening to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_add = 21;</code>
+     * @return A list containing the listeningChannelAdd.
+     */
+    java.util.List<java.lang.Integer> getListeningChannelAddList();
+    /**
+     * <pre>
+     * A list of channels the user wants to start listening to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_add = 21;</code>
+     * @return The count of listeningChannelAdd.
+     */
+    int getListeningChannelAddCount();
+    /**
+     * <pre>
+     * A list of channels the user wants to start listening to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_add = 21;</code>
+     * @param index The index of the element to return.
+     * @return The listeningChannelAdd at the given index.
+     */
+    int getListeningChannelAdd(int index);
+
+    /**
+     * <pre>
+     * a list of channels the user does no longer want to listen to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_remove = 22;</code>
+     * @return A list containing the listeningChannelRemove.
+     */
+    java.util.List<java.lang.Integer> getListeningChannelRemoveList();
+    /**
+     * <pre>
+     * a list of channels the user does no longer want to listen to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_remove = 22;</code>
+     * @return The count of listeningChannelRemove.
+     */
+    int getListeningChannelRemoveCount();
+    /**
+     * <pre>
+     * a list of channels the user does no longer want to listen to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_remove = 22;</code>
+     * @param index The index of the element to return.
+     * @return The listeningChannelRemove at the given index.
+     */
+    int getListeningChannelRemove(int index);
+
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    java.util.List<se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment>
+        getListeningVolumeAdjustmentList();
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment getListeningVolumeAdjustment(int index);
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    int getListeningVolumeAdjustmentCount();
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    java.util.List<? extends se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder>
+        getListeningVolumeAdjustmentOrBuilderList();
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder getListeningVolumeAdjustmentOrBuilder(
+        int index);
   }
   /**
    * <pre>
@@ -11679,6 +12365,10 @@ public final class Mumble {
       hash_ = "";
       commentHash_ = com.google.protobuf.ByteString.EMPTY;
       textureHash_ = com.google.protobuf.ByteString.EMPTY;
+      temporaryAccessTokens_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      listeningChannelAdd_ = emptyIntList();
+      listeningChannelRemove_ = emptyIntList();
+      listeningVolumeAdjustment_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -11811,6 +12501,66 @@ public final class Mumble {
               recording_ = input.readBool();
               break;
             }
+            case 162: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00080000) != 0)) {
+                temporaryAccessTokens_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00080000;
+              }
+              temporaryAccessTokens_.add(bs);
+              break;
+            }
+            case 168: {
+              if (!((mutable_bitField0_ & 0x00100000) != 0)) {
+                listeningChannelAdd_ = newIntList();
+                mutable_bitField0_ |= 0x00100000;
+              }
+              listeningChannelAdd_.addInt(input.readUInt32());
+              break;
+            }
+            case 170: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00100000) != 0) && input.getBytesUntilLimit() > 0) {
+                listeningChannelAdd_ = newIntList();
+                mutable_bitField0_ |= 0x00100000;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                listeningChannelAdd_.addInt(input.readUInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 176: {
+              if (!((mutable_bitField0_ & 0x00200000) != 0)) {
+                listeningChannelRemove_ = newIntList();
+                mutable_bitField0_ |= 0x00200000;
+              }
+              listeningChannelRemove_.addInt(input.readUInt32());
+              break;
+            }
+            case 178: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00200000) != 0) && input.getBytesUntilLimit() > 0) {
+                listeningChannelRemove_ = newIntList();
+                mutable_bitField0_ |= 0x00200000;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                listeningChannelRemove_.addInt(input.readUInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 186: {
+              if (!((mutable_bitField0_ & 0x00400000) != 0)) {
+                listeningVolumeAdjustment_ = new java.util.ArrayList<se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment>();
+                mutable_bitField0_ |= 0x00400000;
+              }
+              listeningVolumeAdjustment_.add(
+                  input.readMessage(se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.PARSER, extensionRegistry));
+              break;
+            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -11826,6 +12576,18 @@ public final class Mumble {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00080000) != 0)) {
+          temporaryAccessTokens_ = temporaryAccessTokens_.getUnmodifiableView();
+        }
+        if (((mutable_bitField0_ & 0x00100000) != 0)) {
+          listeningChannelAdd_.makeImmutable(); // C
+        }
+        if (((mutable_bitField0_ & 0x00200000) != 0)) {
+          listeningChannelRemove_.makeImmutable(); // C
+        }
+        if (((mutable_bitField0_ & 0x00400000) != 0)) {
+          listeningVolumeAdjustment_ = java.util.Collections.unmodifiableList(listeningVolumeAdjustment_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -11841,6 +12603,622 @@ public final class Mumble {
       return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_UserState_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               se.lublin.humla.protobuf.Mumble.UserState.class, se.lublin.humla.protobuf.Mumble.UserState.Builder.class);
+    }
+
+    public interface VolumeAdjustmentOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:MumbleProto.UserState.VolumeAdjustment)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <code>optional uint32 listening_channel = 1;</code>
+       * @return Whether the listeningChannel field is set.
+       */
+      boolean hasListeningChannel();
+      /**
+       * <code>optional uint32 listening_channel = 1;</code>
+       * @return The listeningChannel.
+       */
+      int getListeningChannel();
+
+      /**
+       * <code>optional float volume_adjustment = 2;</code>
+       * @return Whether the volumeAdjustment field is set.
+       */
+      boolean hasVolumeAdjustment();
+      /**
+       * <code>optional float volume_adjustment = 2;</code>
+       * @return The volumeAdjustment.
+       */
+      float getVolumeAdjustment();
+    }
+    /**
+     * Protobuf type {@code MumbleProto.UserState.VolumeAdjustment}
+     */
+    public  static final class VolumeAdjustment extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:MumbleProto.UserState.VolumeAdjustment)
+        VolumeAdjustmentOrBuilder {
+    private static final long serialVersionUID = 0L;
+      // Use VolumeAdjustment.newBuilder() to construct.
+      private VolumeAdjustment(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private VolumeAdjustment() {
+      }
+
+      @java.lang.Override
+      @SuppressWarnings({"unused"})
+      protected java.lang.Object newInstance(
+          UnusedPrivateParameter unused) {
+        return new VolumeAdjustment();
+      }
+
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+      getUnknownFields() {
+        return this.unknownFields;
+      }
+      private VolumeAdjustment(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        this();
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                bitField0_ |= 0x00000001;
+                listeningChannel_ = input.readUInt32();
+                break;
+              }
+              case 21: {
+                bitField0_ |= 0x00000002;
+                volumeAdjustment_ = input.readFloat();
+                break;
+              }
+              default: {
+                if (!parseUnknownField(
+                    input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_UserState_VolumeAdjustment_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_UserState_VolumeAdjustment_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.class, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder.class);
+      }
+
+      private int bitField0_;
+      public static final int LISTENING_CHANNEL_FIELD_NUMBER = 1;
+      private int listeningChannel_;
+      /**
+       * <code>optional uint32 listening_channel = 1;</code>
+       * @return Whether the listeningChannel field is set.
+       */
+      public boolean hasListeningChannel() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional uint32 listening_channel = 1;</code>
+       * @return The listeningChannel.
+       */
+      public int getListeningChannel() {
+        return listeningChannel_;
+      }
+
+      public static final int VOLUME_ADJUSTMENT_FIELD_NUMBER = 2;
+      private float volumeAdjustment_;
+      /**
+       * <code>optional float volume_adjustment = 2;</code>
+       * @return Whether the volumeAdjustment field is set.
+       */
+      public boolean hasVolumeAdjustment() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional float volume_adjustment = 2;</code>
+       * @return The volumeAdjustment.
+       */
+      public float getVolumeAdjustment() {
+        return volumeAdjustment_;
+      }
+
+      private byte memoizedIsInitialized = -1;
+      @java.lang.Override
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      @java.lang.Override
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        if (((bitField0_ & 0x00000001) != 0)) {
+          output.writeUInt32(1, listeningChannel_);
+        }
+        if (((bitField0_ & 0x00000002) != 0)) {
+          output.writeFloat(2, volumeAdjustment_);
+        }
+        unknownFields.writeTo(output);
+      }
+
+      @java.lang.Override
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) != 0)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeUInt32Size(1, listeningChannel_);
+        }
+        if (((bitField0_ & 0x00000002) != 0)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeFloatSize(2, volumeAdjustment_);
+        }
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment)) {
+          return super.equals(obj);
+        }
+        se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment other = (se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment) obj;
+
+        if (hasListeningChannel() != other.hasListeningChannel()) return false;
+        if (hasListeningChannel()) {
+          if (getListeningChannel()
+              != other.getListeningChannel()) return false;
+        }
+        if (hasVolumeAdjustment() != other.hasVolumeAdjustment()) return false;
+        if (hasVolumeAdjustment()) {
+          if (java.lang.Float.floatToIntBits(getVolumeAdjustment())
+              != java.lang.Float.floatToIntBits(
+                  other.getVolumeAdjustment())) return false;
+        }
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (hasListeningChannel()) {
+          hash = (37 * hash) + LISTENING_CHANNEL_FIELD_NUMBER;
+          hash = (53 * hash) + getListeningChannel();
+        }
+        if (hasVolumeAdjustment()) {
+          hash = (37 * hash) + VOLUME_ADJUSTMENT_FIELD_NUMBER;
+          hash = (53 * hash) + java.lang.Float.floatToIntBits(
+              getVolumeAdjustment());
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      @java.lang.Override
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      @java.lang.Override
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code MumbleProto.UserState.VolumeAdjustment}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:MumbleProto.UserState.VolumeAdjustment)
+          se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_UserState_VolumeAdjustment_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_UserState_VolumeAdjustment_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.class, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder.class);
+        }
+
+        // Construct using se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
+          }
+        }
+        @java.lang.Override
+        public Builder clear() {
+          super.clear();
+          listeningChannel_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000001);
+          volumeAdjustment_ = 0F;
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_UserState_VolumeAdjustment_descriptor;
+        }
+
+        @java.lang.Override
+        public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment getDefaultInstanceForType() {
+          return se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.getDefaultInstance();
+        }
+
+        @java.lang.Override
+        public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment build() {
+          se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        @java.lang.Override
+        public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment buildPartial() {
+          se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment result = new se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            result.listeningChannel_ = listeningChannel_;
+            to_bitField0_ |= 0x00000001;
+          }
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            result.volumeAdjustment_ = volumeAdjustment_;
+            to_bitField0_ |= 0x00000002;
+          }
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        @java.lang.Override
+        public Builder clone() {
+          return super.clone();
+        }
+        @java.lang.Override
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.setField(field, value);
+        }
+        @java.lang.Override
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return super.clearField(field);
+        }
+        @java.lang.Override
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return super.clearOneof(oneof);
+        }
+        @java.lang.Override
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
+        }
+        @java.lang.Override
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.addRepeatedField(field, value);
+        }
+        @java.lang.Override
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment) {
+            return mergeFrom((se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment other) {
+          if (other == se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.getDefaultInstance()) return this;
+          if (other.hasListeningChannel()) {
+            setListeningChannel(other.getListeningChannel());
+          }
+          if (other.hasVolumeAdjustment()) {
+            setVolumeAdjustment(other.getVolumeAdjustment());
+          }
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment) e.getUnfinishedMessage();
+            throw e.unwrapIOException();
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        private int listeningChannel_ ;
+        /**
+         * <code>optional uint32 listening_channel = 1;</code>
+         * @return Whether the listeningChannel field is set.
+         */
+        public boolean hasListeningChannel() {
+          return ((bitField0_ & 0x00000001) != 0);
+        }
+        /**
+         * <code>optional uint32 listening_channel = 1;</code>
+         * @return The listeningChannel.
+         */
+        public int getListeningChannel() {
+          return listeningChannel_;
+        }
+        /**
+         * <code>optional uint32 listening_channel = 1;</code>
+         * @param value The listeningChannel to set.
+         * @return This builder for chaining.
+         */
+        public Builder setListeningChannel(int value) {
+          bitField0_ |= 0x00000001;
+          listeningChannel_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional uint32 listening_channel = 1;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearListeningChannel() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          listeningChannel_ = 0;
+          onChanged();
+          return this;
+        }
+
+        private float volumeAdjustment_ ;
+        /**
+         * <code>optional float volume_adjustment = 2;</code>
+         * @return Whether the volumeAdjustment field is set.
+         */
+        public boolean hasVolumeAdjustment() {
+          return ((bitField0_ & 0x00000002) != 0);
+        }
+        /**
+         * <code>optional float volume_adjustment = 2;</code>
+         * @return The volumeAdjustment.
+         */
+        public float getVolumeAdjustment() {
+          return volumeAdjustment_;
+        }
+        /**
+         * <code>optional float volume_adjustment = 2;</code>
+         * @param value The volumeAdjustment to set.
+         * @return This builder for chaining.
+         */
+        public Builder setVolumeAdjustment(float value) {
+          bitField0_ |= 0x00000002;
+          volumeAdjustment_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional float volume_adjustment = 2;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearVolumeAdjustment() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          volumeAdjustment_ = 0F;
+          onChanged();
+          return this;
+        }
+        @java.lang.Override
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        @java.lang.Override
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:MumbleProto.UserState.VolumeAdjustment)
+      }
+
+      // @@protoc_insertion_point(class_scope:MumbleProto.UserState.VolumeAdjustment)
+      private static final se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment();
+      }
+
+      public static se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<VolumeAdjustment>
+          PARSER = new com.google.protobuf.AbstractParser<VolumeAdjustment>() {
+        @java.lang.Override
+        public VolumeAdjustment parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new VolumeAdjustment(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<VolumeAdjustment> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<VolumeAdjustment> getParserForType() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
     }
 
     private int bitField0_;
@@ -11922,7 +13300,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -11943,7 +13321,7 @@ public final class Mumble {
         getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         name_ = b;
@@ -12162,7 +13540,7 @@ public final class Mumble {
      * The positional audio plugin identifier.
      * Positional audio information is only sent to users who share
      * identical plugin contexts.
-     * This value is not trasmitted to clients.
+     * This value is not transmitted to clients.
      * </pre>
      *
      * <code>optional bytes plugin_context = 12;</code>
@@ -12176,7 +13554,7 @@ public final class Mumble {
      * The positional audio plugin identifier.
      * Positional audio information is only sent to users who share
      * identical plugin contexts.
-     * This value is not trasmitted to clients.
+     * This value is not transmitted to clients.
      * </pre>
      *
      * <code>optional bytes plugin_context = 12;</code>
@@ -12214,7 +13592,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -12236,7 +13614,7 @@ public final class Mumble {
         getPluginIdentityBytes() {
       java.lang.Object ref = pluginIdentity_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         pluginIdentity_ = b;
@@ -12272,7 +13650,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -12293,7 +13671,7 @@ public final class Mumble {
         getCommentBytes() {
       java.lang.Object ref = comment_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         comment_ = b;
@@ -12329,7 +13707,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -12350,7 +13728,7 @@ public final class Mumble {
         getHashBytes() {
       java.lang.Object ref = hash_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         hash_ = b;
@@ -12460,6 +13838,188 @@ public final class Mumble {
       return recording_;
     }
 
+    public static final int TEMPORARY_ACCESS_TOKENS_FIELD_NUMBER = 20;
+    private com.google.protobuf.LazyStringList temporaryAccessTokens_;
+    /**
+     * <pre>
+     * A list of temporary access tokens to be respected when processing this request.
+     * </pre>
+     *
+     * <code>repeated string temporary_access_tokens = 20;</code>
+     * @return A list containing the temporaryAccessTokens.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getTemporaryAccessTokensList() {
+      return temporaryAccessTokens_;
+    }
+    /**
+     * <pre>
+     * A list of temporary access tokens to be respected when processing this request.
+     * </pre>
+     *
+     * <code>repeated string temporary_access_tokens = 20;</code>
+     * @return The count of temporaryAccessTokens.
+     */
+    public int getTemporaryAccessTokensCount() {
+      return temporaryAccessTokens_.size();
+    }
+    /**
+     * <pre>
+     * A list of temporary access tokens to be respected when processing this request.
+     * </pre>
+     *
+     * <code>repeated string temporary_access_tokens = 20;</code>
+     * @param index The index of the element to return.
+     * @return The temporaryAccessTokens at the given index.
+     */
+    public java.lang.String getTemporaryAccessTokens(int index) {
+      return temporaryAccessTokens_.get(index);
+    }
+    /**
+     * <pre>
+     * A list of temporary access tokens to be respected when processing this request.
+     * </pre>
+     *
+     * <code>repeated string temporary_access_tokens = 20;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the temporaryAccessTokens at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getTemporaryAccessTokensBytes(int index) {
+      return temporaryAccessTokens_.getByteString(index);
+    }
+
+    public static final int LISTENING_CHANNEL_ADD_FIELD_NUMBER = 21;
+    private com.google.protobuf.Internal.IntList listeningChannelAdd_;
+    /**
+     * <pre>
+     * A list of channels the user wants to start listening to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_add = 21;</code>
+     * @return A list containing the listeningChannelAdd.
+     */
+    public java.util.List<java.lang.Integer>
+        getListeningChannelAddList() {
+      return listeningChannelAdd_;
+    }
+    /**
+     * <pre>
+     * A list of channels the user wants to start listening to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_add = 21;</code>
+     * @return The count of listeningChannelAdd.
+     */
+    public int getListeningChannelAddCount() {
+      return listeningChannelAdd_.size();
+    }
+    /**
+     * <pre>
+     * A list of channels the user wants to start listening to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_add = 21;</code>
+     * @param index The index of the element to return.
+     * @return The listeningChannelAdd at the given index.
+     */
+    public int getListeningChannelAdd(int index) {
+      return listeningChannelAdd_.getInt(index);
+    }
+
+    public static final int LISTENING_CHANNEL_REMOVE_FIELD_NUMBER = 22;
+    private com.google.protobuf.Internal.IntList listeningChannelRemove_;
+    /**
+     * <pre>
+     * a list of channels the user does no longer want to listen to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_remove = 22;</code>
+     * @return A list containing the listeningChannelRemove.
+     */
+    public java.util.List<java.lang.Integer>
+        getListeningChannelRemoveList() {
+      return listeningChannelRemove_;
+    }
+    /**
+     * <pre>
+     * a list of channels the user does no longer want to listen to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_remove = 22;</code>
+     * @return The count of listeningChannelRemove.
+     */
+    public int getListeningChannelRemoveCount() {
+      return listeningChannelRemove_.size();
+    }
+    /**
+     * <pre>
+     * a list of channels the user does no longer want to listen to.
+     * </pre>
+     *
+     * <code>repeated uint32 listening_channel_remove = 22;</code>
+     * @param index The index of the element to return.
+     * @return The listeningChannelRemove at the given index.
+     */
+    public int getListeningChannelRemove(int index) {
+      return listeningChannelRemove_.getInt(index);
+    }
+
+    public static final int LISTENING_VOLUME_ADJUSTMENT_FIELD_NUMBER = 23;
+    private java.util.List<se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment> listeningVolumeAdjustment_;
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    public java.util.List<se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment> getListeningVolumeAdjustmentList() {
+      return listeningVolumeAdjustment_;
+    }
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder>
+        getListeningVolumeAdjustmentOrBuilderList() {
+      return listeningVolumeAdjustment_;
+    }
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    public int getListeningVolumeAdjustmentCount() {
+      return listeningVolumeAdjustment_.size();
+    }
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment getListeningVolumeAdjustment(int index) {
+      return listeningVolumeAdjustment_.get(index);
+    }
+    /**
+     * <pre>
+     * A list of volume adjustments the user has applied to listeners
+     * </pre>
+     *
+     * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+     */
+    public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder getListeningVolumeAdjustmentOrBuilder(
+        int index) {
+      return listeningVolumeAdjustment_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -12530,6 +14090,18 @@ public final class Mumble {
       }
       if (((bitField0_ & 0x00040000) != 0)) {
         output.writeBool(19, recording_);
+      }
+      for (int i = 0; i < temporaryAccessTokens_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 20, temporaryAccessTokens_.getRaw(i));
+      }
+      for (int i = 0; i < listeningChannelAdd_.size(); i++) {
+        output.writeUInt32(21, listeningChannelAdd_.getInt(i));
+      }
+      for (int i = 0; i < listeningChannelRemove_.size(); i++) {
+        output.writeUInt32(22, listeningChannelRemove_.getInt(i));
+      }
+      for (int i = 0; i < listeningVolumeAdjustment_.size(); i++) {
+        output.writeMessage(23, listeningVolumeAdjustment_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -12611,6 +14183,36 @@ public final class Mumble {
       if (((bitField0_ & 0x00040000) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(19, recording_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < temporaryAccessTokens_.size(); i++) {
+          dataSize += computeStringSizeNoTag(temporaryAccessTokens_.getRaw(i));
+        }
+        size += dataSize;
+        size += 2 * getTemporaryAccessTokensList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < listeningChannelAdd_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeUInt32SizeNoTag(listeningChannelAdd_.getInt(i));
+        }
+        size += dataSize;
+        size += 2 * getListeningChannelAddList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < listeningChannelRemove_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeUInt32SizeNoTag(listeningChannelRemove_.getInt(i));
+        }
+        size += dataSize;
+        size += 2 * getListeningChannelRemoveList().size();
+      }
+      for (int i = 0; i < listeningVolumeAdjustment_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(23, listeningVolumeAdjustment_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -12722,6 +14324,14 @@ public final class Mumble {
         if (getRecording()
             != other.getRecording()) return false;
       }
+      if (!getTemporaryAccessTokensList()
+          .equals(other.getTemporaryAccessTokensList())) return false;
+      if (!getListeningChannelAddList()
+          .equals(other.getListeningChannelAddList())) return false;
+      if (!getListeningChannelRemoveList()
+          .equals(other.getListeningChannelRemoveList())) return false;
+      if (!getListeningVolumeAdjustmentList()
+          .equals(other.getListeningVolumeAdjustmentList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -12815,6 +14425,22 @@ public final class Mumble {
         hash = (37 * hash) + RECORDING_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getRecording());
+      }
+      if (getTemporaryAccessTokensCount() > 0) {
+        hash = (37 * hash) + TEMPORARY_ACCESS_TOKENS_FIELD_NUMBER;
+        hash = (53 * hash) + getTemporaryAccessTokensList().hashCode();
+      }
+      if (getListeningChannelAddCount() > 0) {
+        hash = (37 * hash) + LISTENING_CHANNEL_ADD_FIELD_NUMBER;
+        hash = (53 * hash) + getListeningChannelAddList().hashCode();
+      }
+      if (getListeningChannelRemoveCount() > 0) {
+        hash = (37 * hash) + LISTENING_CHANNEL_REMOVE_FIELD_NUMBER;
+        hash = (53 * hash) + getListeningChannelRemoveList().hashCode();
+      }
+      if (getListeningVolumeAdjustmentCount() > 0) {
+        hash = (37 * hash) + LISTENING_VOLUME_ADJUSTMENT_FIELD_NUMBER;
+        hash = (53 * hash) + getListeningVolumeAdjustmentList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -12950,6 +14576,7 @@ public final class Mumble {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getListeningVolumeAdjustmentFieldBuilder();
         }
       }
       @java.lang.Override
@@ -12993,6 +14620,18 @@ public final class Mumble {
         bitField0_ = (bitField0_ & ~0x00020000);
         recording_ = false;
         bitField0_ = (bitField0_ & ~0x00040000);
+        temporaryAccessTokens_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00080000);
+        listeningChannelAdd_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00100000);
+        listeningChannelRemove_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00200000);
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          listeningVolumeAdjustment_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00400000);
+        } else {
+          listeningVolumeAdjustmentBuilder_.clear();
+        }
         return this;
       }
 
@@ -13096,6 +14735,30 @@ public final class Mumble {
         if (((from_bitField0_ & 0x00040000) != 0)) {
           result.recording_ = recording_;
           to_bitField0_ |= 0x00040000;
+        }
+        if (((bitField0_ & 0x00080000) != 0)) {
+          temporaryAccessTokens_ = temporaryAccessTokens_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00080000);
+        }
+        result.temporaryAccessTokens_ = temporaryAccessTokens_;
+        if (((bitField0_ & 0x00100000) != 0)) {
+          listeningChannelAdd_.makeImmutable();
+          bitField0_ = (bitField0_ & ~0x00100000);
+        }
+        result.listeningChannelAdd_ = listeningChannelAdd_;
+        if (((bitField0_ & 0x00200000) != 0)) {
+          listeningChannelRemove_.makeImmutable();
+          bitField0_ = (bitField0_ & ~0x00200000);
+        }
+        result.listeningChannelRemove_ = listeningChannelRemove_;
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          if (((bitField0_ & 0x00400000) != 0)) {
+            listeningVolumeAdjustment_ = java.util.Collections.unmodifiableList(listeningVolumeAdjustment_);
+            bitField0_ = (bitField0_ & ~0x00400000);
+          }
+          result.listeningVolumeAdjustment_ = listeningVolumeAdjustment_;
+        } else {
+          result.listeningVolumeAdjustment_ = listeningVolumeAdjustmentBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -13210,6 +14873,62 @@ public final class Mumble {
         }
         if (other.hasRecording()) {
           setRecording(other.getRecording());
+        }
+        if (!other.temporaryAccessTokens_.isEmpty()) {
+          if (temporaryAccessTokens_.isEmpty()) {
+            temporaryAccessTokens_ = other.temporaryAccessTokens_;
+            bitField0_ = (bitField0_ & ~0x00080000);
+          } else {
+            ensureTemporaryAccessTokensIsMutable();
+            temporaryAccessTokens_.addAll(other.temporaryAccessTokens_);
+          }
+          onChanged();
+        }
+        if (!other.listeningChannelAdd_.isEmpty()) {
+          if (listeningChannelAdd_.isEmpty()) {
+            listeningChannelAdd_ = other.listeningChannelAdd_;
+            bitField0_ = (bitField0_ & ~0x00100000);
+          } else {
+            ensureListeningChannelAddIsMutable();
+            listeningChannelAdd_.addAll(other.listeningChannelAdd_);
+          }
+          onChanged();
+        }
+        if (!other.listeningChannelRemove_.isEmpty()) {
+          if (listeningChannelRemove_.isEmpty()) {
+            listeningChannelRemove_ = other.listeningChannelRemove_;
+            bitField0_ = (bitField0_ & ~0x00200000);
+          } else {
+            ensureListeningChannelRemoveIsMutable();
+            listeningChannelRemove_.addAll(other.listeningChannelRemove_);
+          }
+          onChanged();
+        }
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          if (!other.listeningVolumeAdjustment_.isEmpty()) {
+            if (listeningVolumeAdjustment_.isEmpty()) {
+              listeningVolumeAdjustment_ = other.listeningVolumeAdjustment_;
+              bitField0_ = (bitField0_ & ~0x00400000);
+            } else {
+              ensureListeningVolumeAdjustmentIsMutable();
+              listeningVolumeAdjustment_.addAll(other.listeningVolumeAdjustment_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.listeningVolumeAdjustment_.isEmpty()) {
+            if (listeningVolumeAdjustmentBuilder_.isEmpty()) {
+              listeningVolumeAdjustmentBuilder_.dispose();
+              listeningVolumeAdjustmentBuilder_ = null;
+              listeningVolumeAdjustment_ = other.listeningVolumeAdjustment_;
+              bitField0_ = (bitField0_ & ~0x00400000);
+              listeningVolumeAdjustmentBuilder_ =
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getListeningVolumeAdjustmentFieldBuilder() : null;
+            } else {
+              listeningVolumeAdjustmentBuilder_.addAllMessages(other.listeningVolumeAdjustment_);
+            }
+          }
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -13397,7 +15116,7 @@ public final class Mumble {
           getNameBytes() {
         java.lang.Object ref = name_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           name_ = b;
@@ -13896,7 +15615,7 @@ public final class Mumble {
        * The positional audio plugin identifier.
        * Positional audio information is only sent to users who share
        * identical plugin contexts.
-       * This value is not trasmitted to clients.
+       * This value is not transmitted to clients.
        * </pre>
        *
        * <code>optional bytes plugin_context = 12;</code>
@@ -13910,7 +15629,7 @@ public final class Mumble {
        * The positional audio plugin identifier.
        * Positional audio information is only sent to users who share
        * identical plugin contexts.
-       * This value is not trasmitted to clients.
+       * This value is not transmitted to clients.
        * </pre>
        *
        * <code>optional bytes plugin_context = 12;</code>
@@ -13924,7 +15643,7 @@ public final class Mumble {
        * The positional audio plugin identifier.
        * Positional audio information is only sent to users who share
        * identical plugin contexts.
-       * This value is not trasmitted to clients.
+       * This value is not transmitted to clients.
        * </pre>
        *
        * <code>optional bytes plugin_context = 12;</code>
@@ -13945,7 +15664,7 @@ public final class Mumble {
        * The positional audio plugin identifier.
        * Positional audio information is only sent to users who share
        * identical plugin contexts.
-       * This value is not trasmitted to clients.
+       * This value is not transmitted to clients.
        * </pre>
        *
        * <code>optional bytes plugin_context = 12;</code>
@@ -14007,7 +15726,7 @@ public final class Mumble {
           getPluginIdentityBytes() {
         java.lang.Object ref = pluginIdentity_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           pluginIdentity_ = b;
@@ -14118,7 +15837,7 @@ public final class Mumble {
           getCommentBytes() {
         java.lang.Object ref = comment_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           comment_ = b;
@@ -14226,7 +15945,7 @@ public final class Mumble {
           getHashBytes() {
         java.lang.Object ref = hash_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           hash_ = b;
@@ -14505,6 +16224,677 @@ public final class Mumble {
         onChanged();
         return this;
       }
+
+      private com.google.protobuf.LazyStringList temporaryAccessTokens_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureTemporaryAccessTokensIsMutable() {
+        if (!((bitField0_ & 0x00080000) != 0)) {
+          temporaryAccessTokens_ = new com.google.protobuf.LazyStringArrayList(temporaryAccessTokens_);
+          bitField0_ |= 0x00080000;
+         }
+      }
+      /**
+       * <pre>
+       * A list of temporary access tokens to be respected when processing this request.
+       * </pre>
+       *
+       * <code>repeated string temporary_access_tokens = 20;</code>
+       * @return A list containing the temporaryAccessTokens.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getTemporaryAccessTokensList() {
+        return temporaryAccessTokens_.getUnmodifiableView();
+      }
+      /**
+       * <pre>
+       * A list of temporary access tokens to be respected when processing this request.
+       * </pre>
+       *
+       * <code>repeated string temporary_access_tokens = 20;</code>
+       * @return The count of temporaryAccessTokens.
+       */
+      public int getTemporaryAccessTokensCount() {
+        return temporaryAccessTokens_.size();
+      }
+      /**
+       * <pre>
+       * A list of temporary access tokens to be respected when processing this request.
+       * </pre>
+       *
+       * <code>repeated string temporary_access_tokens = 20;</code>
+       * @param index The index of the element to return.
+       * @return The temporaryAccessTokens at the given index.
+       */
+      public java.lang.String getTemporaryAccessTokens(int index) {
+        return temporaryAccessTokens_.get(index);
+      }
+      /**
+       * <pre>
+       * A list of temporary access tokens to be respected when processing this request.
+       * </pre>
+       *
+       * <code>repeated string temporary_access_tokens = 20;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the temporaryAccessTokens at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getTemporaryAccessTokensBytes(int index) {
+        return temporaryAccessTokens_.getByteString(index);
+      }
+      /**
+       * <pre>
+       * A list of temporary access tokens to be respected when processing this request.
+       * </pre>
+       *
+       * <code>repeated string temporary_access_tokens = 20;</code>
+       * @param index The index to set the value at.
+       * @param value The temporaryAccessTokens to set.
+       * @return This builder for chaining.
+       */
+      public Builder setTemporaryAccessTokens(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTemporaryAccessTokensIsMutable();
+        temporaryAccessTokens_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of temporary access tokens to be respected when processing this request.
+       * </pre>
+       *
+       * <code>repeated string temporary_access_tokens = 20;</code>
+       * @param value The temporaryAccessTokens to add.
+       * @return This builder for chaining.
+       */
+      public Builder addTemporaryAccessTokens(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTemporaryAccessTokensIsMutable();
+        temporaryAccessTokens_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of temporary access tokens to be respected when processing this request.
+       * </pre>
+       *
+       * <code>repeated string temporary_access_tokens = 20;</code>
+       * @param values The temporaryAccessTokens to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllTemporaryAccessTokens(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureTemporaryAccessTokensIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, temporaryAccessTokens_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of temporary access tokens to be respected when processing this request.
+       * </pre>
+       *
+       * <code>repeated string temporary_access_tokens = 20;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearTemporaryAccessTokens() {
+        temporaryAccessTokens_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00080000);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of temporary access tokens to be respected when processing this request.
+       * </pre>
+       *
+       * <code>repeated string temporary_access_tokens = 20;</code>
+       * @param value The bytes of the temporaryAccessTokens to add.
+       * @return This builder for chaining.
+       */
+      public Builder addTemporaryAccessTokensBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTemporaryAccessTokensIsMutable();
+        temporaryAccessTokens_.add(value);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.Internal.IntList listeningChannelAdd_ = emptyIntList();
+      private void ensureListeningChannelAddIsMutable() {
+        if (!((bitField0_ & 0x00100000) != 0)) {
+          listeningChannelAdd_ = mutableCopy(listeningChannelAdd_);
+          bitField0_ |= 0x00100000;
+         }
+      }
+      /**
+       * <pre>
+       * A list of channels the user wants to start listening to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_add = 21;</code>
+       * @return A list containing the listeningChannelAdd.
+       */
+      public java.util.List<java.lang.Integer>
+          getListeningChannelAddList() {
+        return ((bitField0_ & 0x00100000) != 0) ?
+                 java.util.Collections.unmodifiableList(listeningChannelAdd_) : listeningChannelAdd_;
+      }
+      /**
+       * <pre>
+       * A list of channels the user wants to start listening to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_add = 21;</code>
+       * @return The count of listeningChannelAdd.
+       */
+      public int getListeningChannelAddCount() {
+        return listeningChannelAdd_.size();
+      }
+      /**
+       * <pre>
+       * A list of channels the user wants to start listening to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_add = 21;</code>
+       * @param index The index of the element to return.
+       * @return The listeningChannelAdd at the given index.
+       */
+      public int getListeningChannelAdd(int index) {
+        return listeningChannelAdd_.getInt(index);
+      }
+      /**
+       * <pre>
+       * A list of channels the user wants to start listening to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_add = 21;</code>
+       * @param index The index to set the value at.
+       * @param value The listeningChannelAdd to set.
+       * @return This builder for chaining.
+       */
+      public Builder setListeningChannelAdd(
+          int index, int value) {
+        ensureListeningChannelAddIsMutable();
+        listeningChannelAdd_.setInt(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of channels the user wants to start listening to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_add = 21;</code>
+       * @param value The listeningChannelAdd to add.
+       * @return This builder for chaining.
+       */
+      public Builder addListeningChannelAdd(int value) {
+        ensureListeningChannelAddIsMutable();
+        listeningChannelAdd_.addInt(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of channels the user wants to start listening to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_add = 21;</code>
+       * @param values The listeningChannelAdd to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllListeningChannelAdd(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureListeningChannelAddIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, listeningChannelAdd_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of channels the user wants to start listening to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_add = 21;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearListeningChannelAdd() {
+        listeningChannelAdd_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00100000);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.Internal.IntList listeningChannelRemove_ = emptyIntList();
+      private void ensureListeningChannelRemoveIsMutable() {
+        if (!((bitField0_ & 0x00200000) != 0)) {
+          listeningChannelRemove_ = mutableCopy(listeningChannelRemove_);
+          bitField0_ |= 0x00200000;
+         }
+      }
+      /**
+       * <pre>
+       * a list of channels the user does no longer want to listen to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_remove = 22;</code>
+       * @return A list containing the listeningChannelRemove.
+       */
+      public java.util.List<java.lang.Integer>
+          getListeningChannelRemoveList() {
+        return ((bitField0_ & 0x00200000) != 0) ?
+                 java.util.Collections.unmodifiableList(listeningChannelRemove_) : listeningChannelRemove_;
+      }
+      /**
+       * <pre>
+       * a list of channels the user does no longer want to listen to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_remove = 22;</code>
+       * @return The count of listeningChannelRemove.
+       */
+      public int getListeningChannelRemoveCount() {
+        return listeningChannelRemove_.size();
+      }
+      /**
+       * <pre>
+       * a list of channels the user does no longer want to listen to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_remove = 22;</code>
+       * @param index The index of the element to return.
+       * @return The listeningChannelRemove at the given index.
+       */
+      public int getListeningChannelRemove(int index) {
+        return listeningChannelRemove_.getInt(index);
+      }
+      /**
+       * <pre>
+       * a list of channels the user does no longer want to listen to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_remove = 22;</code>
+       * @param index The index to set the value at.
+       * @param value The listeningChannelRemove to set.
+       * @return This builder for chaining.
+       */
+      public Builder setListeningChannelRemove(
+          int index, int value) {
+        ensureListeningChannelRemoveIsMutable();
+        listeningChannelRemove_.setInt(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * a list of channels the user does no longer want to listen to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_remove = 22;</code>
+       * @param value The listeningChannelRemove to add.
+       * @return This builder for chaining.
+       */
+      public Builder addListeningChannelRemove(int value) {
+        ensureListeningChannelRemoveIsMutable();
+        listeningChannelRemove_.addInt(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * a list of channels the user does no longer want to listen to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_remove = 22;</code>
+       * @param values The listeningChannelRemove to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllListeningChannelRemove(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureListeningChannelRemoveIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, listeningChannelRemove_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * a list of channels the user does no longer want to listen to.
+       * </pre>
+       *
+       * <code>repeated uint32 listening_channel_remove = 22;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearListeningChannelRemove() {
+        listeningChannelRemove_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00200000);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment> listeningVolumeAdjustment_ =
+        java.util.Collections.emptyList();
+      private void ensureListeningVolumeAdjustmentIsMutable() {
+        if (!((bitField0_ & 0x00400000) != 0)) {
+          listeningVolumeAdjustment_ = new java.util.ArrayList<se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment>(listeningVolumeAdjustment_);
+          bitField0_ |= 0x00400000;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder> listeningVolumeAdjustmentBuilder_;
+
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public java.util.List<se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment> getListeningVolumeAdjustmentList() {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(listeningVolumeAdjustment_);
+        } else {
+          return listeningVolumeAdjustmentBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public int getListeningVolumeAdjustmentCount() {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          return listeningVolumeAdjustment_.size();
+        } else {
+          return listeningVolumeAdjustmentBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment getListeningVolumeAdjustment(int index) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          return listeningVolumeAdjustment_.get(index);
+        } else {
+          return listeningVolumeAdjustmentBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public Builder setListeningVolumeAdjustment(
+          int index, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment value) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureListeningVolumeAdjustmentIsMutable();
+          listeningVolumeAdjustment_.set(index, value);
+          onChanged();
+        } else {
+          listeningVolumeAdjustmentBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public Builder setListeningVolumeAdjustment(
+          int index, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder builderForValue) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          ensureListeningVolumeAdjustmentIsMutable();
+          listeningVolumeAdjustment_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          listeningVolumeAdjustmentBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public Builder addListeningVolumeAdjustment(se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment value) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureListeningVolumeAdjustmentIsMutable();
+          listeningVolumeAdjustment_.add(value);
+          onChanged();
+        } else {
+          listeningVolumeAdjustmentBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public Builder addListeningVolumeAdjustment(
+          int index, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment value) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureListeningVolumeAdjustmentIsMutable();
+          listeningVolumeAdjustment_.add(index, value);
+          onChanged();
+        } else {
+          listeningVolumeAdjustmentBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public Builder addListeningVolumeAdjustment(
+          se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder builderForValue) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          ensureListeningVolumeAdjustmentIsMutable();
+          listeningVolumeAdjustment_.add(builderForValue.build());
+          onChanged();
+        } else {
+          listeningVolumeAdjustmentBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public Builder addListeningVolumeAdjustment(
+          int index, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder builderForValue) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          ensureListeningVolumeAdjustmentIsMutable();
+          listeningVolumeAdjustment_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          listeningVolumeAdjustmentBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public Builder addAllListeningVolumeAdjustment(
+          java.lang.Iterable<? extends se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment> values) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          ensureListeningVolumeAdjustmentIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, listeningVolumeAdjustment_);
+          onChanged();
+        } else {
+          listeningVolumeAdjustmentBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public Builder clearListeningVolumeAdjustment() {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          listeningVolumeAdjustment_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00400000);
+          onChanged();
+        } else {
+          listeningVolumeAdjustmentBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public Builder removeListeningVolumeAdjustment(int index) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          ensureListeningVolumeAdjustmentIsMutable();
+          listeningVolumeAdjustment_.remove(index);
+          onChanged();
+        } else {
+          listeningVolumeAdjustmentBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder getListeningVolumeAdjustmentBuilder(
+          int index) {
+        return getListeningVolumeAdjustmentFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder getListeningVolumeAdjustmentOrBuilder(
+          int index) {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          return listeningVolumeAdjustment_.get(index);  } else {
+          return listeningVolumeAdjustmentBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder>
+           getListeningVolumeAdjustmentOrBuilderList() {
+        if (listeningVolumeAdjustmentBuilder_ != null) {
+          return listeningVolumeAdjustmentBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(listeningVolumeAdjustment_);
+        }
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder addListeningVolumeAdjustmentBuilder() {
+        return getListeningVolumeAdjustmentFieldBuilder().addBuilder(
+            se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder addListeningVolumeAdjustmentBuilder(
+          int index) {
+        return getListeningVolumeAdjustmentFieldBuilder().addBuilder(
+            index, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * A list of volume adjustments the user has applied to listeners
+       * </pre>
+       *
+       * <code>repeated .MumbleProto.UserState.VolumeAdjustment listening_volume_adjustment = 23;</code>
+       */
+      public java.util.List<se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder>
+           getListeningVolumeAdjustmentBuilderList() {
+        return getListeningVolumeAdjustmentFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder>
+          getListeningVolumeAdjustmentFieldBuilder() {
+        if (listeningVolumeAdjustmentBuilder_ == null) {
+          listeningVolumeAdjustmentBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustment.Builder, se.lublin.humla.protobuf.Mumble.UserState.VolumeAdjustmentOrBuilder>(
+                  listeningVolumeAdjustment_,
+                  ((bitField0_ & 0x00400000) != 0),
+                  getParentForChildren(),
+                  isClean());
+          listeningVolumeAdjustment_ = null;
+        }
+        return listeningVolumeAdjustmentBuilder_;
+      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -14569,7 +16959,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.BanList.BanEntry bans = 1;</code>
      */
-    java.util.List<se.lublin.humla.protobuf.Mumble.BanList.BanEntry> 
+    java.util.List<se.lublin.humla.protobuf.Mumble.BanList.BanEntry>
         getBansList();
     /**
      * <pre>
@@ -14594,7 +16984,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.BanList.BanEntry bans = 1;</code>
      */
-    java.util.List<? extends se.lublin.humla.protobuf.Mumble.BanList.BanEntryOrBuilder> 
+    java.util.List<? extends se.lublin.humla.protobuf.Mumble.BanList.BanEntryOrBuilder>
         getBansOrBuilderList();
     /**
      * <pre>
@@ -15105,7 +17495,7 @@ public final class Mumble {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs = 
+          com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -15126,7 +17516,7 @@ public final class Mumble {
           getNameBytes() {
         java.lang.Object ref = name_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           name_ = b;
@@ -15162,7 +17552,7 @@ public final class Mumble {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs = 
+          com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -15183,7 +17573,7 @@ public final class Mumble {
           getHashBytes() {
         java.lang.Object ref = hash_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           hash_ = b;
@@ -15219,7 +17609,7 @@ public final class Mumble {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs = 
+          com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -15240,7 +17630,7 @@ public final class Mumble {
           getReasonBytes() {
         java.lang.Object ref = reason_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           reason_ = b;
@@ -15276,7 +17666,7 @@ public final class Mumble {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs = 
+          com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -15297,7 +17687,7 @@ public final class Mumble {
           getStartBytes() {
         java.lang.Object ref = start_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           start_ = b;
@@ -15969,7 +18359,7 @@ public final class Mumble {
             getNameBytes() {
           java.lang.Object ref = name_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString b =
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             name_ = b;
@@ -16077,7 +18467,7 @@ public final class Mumble {
             getHashBytes() {
           java.lang.Object ref = hash_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString b =
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             hash_ = b;
@@ -16185,7 +18575,7 @@ public final class Mumble {
             getReasonBytes() {
           java.lang.Object ref = reason_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString b =
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             reason_ = b;
@@ -16293,7 +18683,7 @@ public final class Mumble {
             getStartBytes() {
           java.lang.Object ref = start_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString b =
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             start_ = b;
@@ -16480,7 +18870,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.BanList.BanEntry bans = 1;</code>
      */
-    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.BanList.BanEntryOrBuilder> 
+    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.BanList.BanEntryOrBuilder>
         getBansOrBuilderList() {
       return bans_;
     }
@@ -16884,7 +19274,7 @@ public final class Mumble {
               bansBuilder_ = null;
               bans_ = other.bans_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              bansBuilder_ = 
+              bansBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getBansFieldBuilder() : null;
             } else {
@@ -17185,7 +19575,7 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.BanList.BanEntry bans = 1;</code>
        */
-      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.BanList.BanEntryOrBuilder> 
+      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.BanList.BanEntryOrBuilder>
            getBansOrBuilderList() {
         if (bansBuilder_ != null) {
           return bansBuilder_.getMessageOrBuilderList();
@@ -17223,12 +19613,12 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.BanList.BanEntry bans = 1;</code>
        */
-      public java.util.List<se.lublin.humla.protobuf.Mumble.BanList.BanEntry.Builder> 
+      public java.util.List<se.lublin.humla.protobuf.Mumble.BanList.BanEntry.Builder>
            getBansBuilderList() {
         return getBansFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          se.lublin.humla.protobuf.Mumble.BanList.BanEntry, se.lublin.humla.protobuf.Mumble.BanList.BanEntry.Builder, se.lublin.humla.protobuf.Mumble.BanList.BanEntryOrBuilder> 
+          se.lublin.humla.protobuf.Mumble.BanList.BanEntry, se.lublin.humla.protobuf.Mumble.BanList.BanEntry.Builder, se.lublin.humla.protobuf.Mumble.BanList.BanEntryOrBuilder>
           getBansFieldBuilder() {
         if (bansBuilder_ == null) {
           bansBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -17837,7 +20227,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -17858,7 +20248,7 @@ public final class Mumble {
         getMessageBytes() {
       java.lang.Object ref = message_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         message_ = b;
@@ -18758,7 +21148,7 @@ public final class Mumble {
           getMessageBytes() {
         java.lang.Object ref = message_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           message_ = b;
@@ -19219,7 +21609,7 @@ public final class Mumble {
       ChannelFull(9),
       /**
        * <pre>
-       * Channels are nested too deply.
+       * Channels are nested too deeply.
        * </pre>
        *
        * <code>NestingLimit = 10;</code>
@@ -19233,6 +21623,22 @@ public final class Mumble {
        * <code>ChannelCountLimit = 11;</code>
        */
       ChannelCountLimit(11),
+      /**
+       * <pre>
+       * Amount of listener objects for this channel has been reached
+       * </pre>
+       *
+       * <code>ChannelListenerLimit = 12;</code>
+       */
+      ChannelListenerLimit(12),
+      /**
+       * <pre>
+       * Amount of listener proxies for the user has been reached
+       * </pre>
+       *
+       * <code>UserListenerLimit = 13;</code>
+       */
+      UserListenerLimit(13),
       ;
 
       /**
@@ -19317,7 +21723,7 @@ public final class Mumble {
       public static final int ChannelFull_VALUE = 9;
       /**
        * <pre>
-       * Channels are nested too deply.
+       * Channels are nested too deeply.
        * </pre>
        *
        * <code>NestingLimit = 10;</code>
@@ -19331,6 +21737,22 @@ public final class Mumble {
        * <code>ChannelCountLimit = 11;</code>
        */
       public static final int ChannelCountLimit_VALUE = 11;
+      /**
+       * <pre>
+       * Amount of listener objects for this channel has been reached
+       * </pre>
+       *
+       * <code>ChannelListenerLimit = 12;</code>
+       */
+      public static final int ChannelListenerLimit_VALUE = 12;
+      /**
+       * <pre>
+       * Amount of listener proxies for the user has been reached
+       * </pre>
+       *
+       * <code>UserListenerLimit = 13;</code>
+       */
+      public static final int UserListenerLimit_VALUE = 13;
 
 
       public final int getNumber() {
@@ -19365,6 +21787,8 @@ public final class Mumble {
           case 9: return ChannelFull;
           case 10: return NestingLimit;
           case 11: return ChannelCountLimit;
+          case 12: return ChannelListenerLimit;
+          case 13: return UserListenerLimit;
           default: return null;
         }
       }
@@ -19518,7 +21942,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -19539,7 +21963,7 @@ public final class Mumble {
         getReasonBytes() {
       java.lang.Object ref = reason_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         reason_ = b;
@@ -19602,7 +22026,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -19623,7 +22047,7 @@ public final class Mumble {
         getNameBytes() {
       java.lang.Object ref = name_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         name_ = b;
@@ -20282,7 +22706,7 @@ public final class Mumble {
           getReasonBytes() {
         java.lang.Object ref = reason_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           reason_ = b;
@@ -20448,7 +22872,7 @@ public final class Mumble {
           getNameBytes() {
         java.lang.Object ref = name_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           name_ = b;
@@ -20611,7 +23035,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.ACL.ChanGroup groups = 3;</code>
      */
-    java.util.List<se.lublin.humla.protobuf.Mumble.ACL.ChanGroup> 
+    java.util.List<se.lublin.humla.protobuf.Mumble.ACL.ChanGroup>
         getGroupsList();
     /**
      * <pre>
@@ -20636,7 +23060,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.ACL.ChanGroup groups = 3;</code>
      */
-    java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanGroupOrBuilder> 
+    java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanGroupOrBuilder>
         getGroupsOrBuilderList();
     /**
      * <pre>
@@ -20655,7 +23079,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.ACL.ChanACL acls = 4;</code>
      */
-    java.util.List<se.lublin.humla.protobuf.Mumble.ACL.ChanACL> 
+    java.util.List<se.lublin.humla.protobuf.Mumble.ACL.ChanACL>
         getAclsList();
     /**
      * <pre>
@@ -20680,7 +23104,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.ACL.ChanACL acls = 4;</code>
      */
-    java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanACLOrBuilder> 
+    java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanACLOrBuilder>
         getAclsOrBuilderList();
     /**
      * <pre>
@@ -21216,7 +23640,7 @@ public final class Mumble {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs = 
+          com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -21237,7 +23661,7 @@ public final class Mumble {
           getNameBytes() {
         java.lang.Object ref = name_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           name_ = b;
@@ -21990,7 +24414,7 @@ public final class Mumble {
             getNameBytes() {
           java.lang.Object ref = name_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString b =
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             name_ = b;
@@ -22983,7 +25407,7 @@ public final class Mumble {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs = 
+          com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -23004,7 +25428,7 @@ public final class Mumble {
           getGroupBytes() {
         java.lang.Object ref = group_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           group_ = b;
@@ -23790,7 +26214,7 @@ public final class Mumble {
             getGroupBytes() {
           java.lang.Object ref = group_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString b =
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             group_ = b;
@@ -24080,7 +26504,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.ACL.ChanGroup groups = 3;</code>
      */
-    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanGroupOrBuilder> 
+    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanGroupOrBuilder>
         getGroupsOrBuilderList() {
       return groups_;
     }
@@ -24135,7 +26559,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.ACL.ChanACL acls = 4;</code>
      */
-    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanACLOrBuilder> 
+    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanACLOrBuilder>
         getAclsOrBuilderList() {
       return acls_;
     }
@@ -24615,7 +27039,7 @@ public final class Mumble {
               groupsBuilder_ = null;
               groups_ = other.groups_;
               bitField0_ = (bitField0_ & ~0x00000004);
-              groupsBuilder_ = 
+              groupsBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getGroupsFieldBuilder() : null;
             } else {
@@ -24641,7 +27065,7 @@ public final class Mumble {
               aclsBuilder_ = null;
               acls_ = other.acls_;
               bitField0_ = (bitField0_ & ~0x00000008);
-              aclsBuilder_ = 
+              aclsBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getAclsFieldBuilder() : null;
             } else {
@@ -25051,7 +27475,7 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.ACL.ChanGroup groups = 3;</code>
        */
-      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanGroupOrBuilder> 
+      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanGroupOrBuilder>
            getGroupsOrBuilderList() {
         if (groupsBuilder_ != null) {
           return groupsBuilder_.getMessageOrBuilderList();
@@ -25089,12 +27513,12 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.ACL.ChanGroup groups = 3;</code>
        */
-      public java.util.List<se.lublin.humla.protobuf.Mumble.ACL.ChanGroup.Builder> 
+      public java.util.List<se.lublin.humla.protobuf.Mumble.ACL.ChanGroup.Builder>
            getGroupsBuilderList() {
         return getGroupsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          se.lublin.humla.protobuf.Mumble.ACL.ChanGroup, se.lublin.humla.protobuf.Mumble.ACL.ChanGroup.Builder, se.lublin.humla.protobuf.Mumble.ACL.ChanGroupOrBuilder> 
+          se.lublin.humla.protobuf.Mumble.ACL.ChanGroup, se.lublin.humla.protobuf.Mumble.ACL.ChanGroup.Builder, se.lublin.humla.protobuf.Mumble.ACL.ChanGroupOrBuilder>
           getGroupsFieldBuilder() {
         if (groupsBuilder_ == null) {
           groupsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -25363,7 +27787,7 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.ACL.ChanACL acls = 4;</code>
        */
-      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanACLOrBuilder> 
+      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.ACL.ChanACLOrBuilder>
            getAclsOrBuilderList() {
         if (aclsBuilder_ != null) {
           return aclsBuilder_.getMessageOrBuilderList();
@@ -25401,12 +27825,12 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.ACL.ChanACL acls = 4;</code>
        */
-      public java.util.List<se.lublin.humla.protobuf.Mumble.ACL.ChanACL.Builder> 
+      public java.util.List<se.lublin.humla.protobuf.Mumble.ACL.ChanACL.Builder>
            getAclsBuilderList() {
         return getAclsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          se.lublin.humla.protobuf.Mumble.ACL.ChanACL, se.lublin.humla.protobuf.Mumble.ACL.ChanACL.Builder, se.lublin.humla.protobuf.Mumble.ACL.ChanACLOrBuilder> 
+          se.lublin.humla.protobuf.Mumble.ACL.ChanACL, se.lublin.humla.protobuf.Mumble.ACL.ChanACL.Builder, se.lublin.humla.protobuf.Mumble.ACL.ChanACLOrBuilder>
           getAclsFieldBuilder() {
         if (aclsBuilder_ == null) {
           aclsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -27313,7 +29737,7 @@ public final class Mumble {
 
     /**
      * <pre>
-     * The action name.
+     * The action identifier. Used later to initiate an action.
      * </pre>
      *
      * <code>required string action = 1;</code>
@@ -27322,7 +29746,7 @@ public final class Mumble {
     boolean hasAction();
     /**
      * <pre>
-     * The action name.
+     * The action identifier. Used later to initiate an action.
      * </pre>
      *
      * <code>required string action = 1;</code>
@@ -27331,7 +29755,7 @@ public final class Mumble {
     java.lang.String getAction();
     /**
      * <pre>
-     * The action name.
+     * The action identifier. Used later to initiate an action.
      * </pre>
      *
      * <code>required string action = 1;</code>
@@ -27372,6 +29796,7 @@ public final class Mumble {
     /**
      * <pre>
      * Context bit flags defining where the action should be displayed.
+     * Flags can be OR-ed to combine different types.
      * </pre>
      *
      * <code>optional uint32 context = 3;</code>
@@ -27381,6 +29806,7 @@ public final class Mumble {
     /**
      * <pre>
      * Context bit flags defining where the action should be displayed.
+     * Flags can be OR-ed to combine different types.
      * </pre>
      *
      * <code>optional uint32 context = 3;</code>
@@ -27389,17 +29815,35 @@ public final class Mumble {
     int getContext();
 
     /**
+     * <pre>
+     * Choose either to add or to remove the context action.
+     * Note: This field only exists after Mumble 1.2.4-beta1 release.
+     *       The message will be recognized as Add regardless of this field
+     *       before said release.
+     * </pre>
+     *
      * <code>optional .MumbleProto.ContextActionModify.Operation operation = 4;</code>
      * @return Whether the operation field is set.
      */
     boolean hasOperation();
     /**
+     * <pre>
+     * Choose either to add or to remove the context action.
+     * Note: This field only exists after Mumble 1.2.4-beta1 release.
+     *       The message will be recognized as Add regardless of this field
+     *       before said release.
+     * </pre>
+     *
      * <code>optional .MumbleProto.ContextActionModify.Operation operation = 4;</code>
      * @return The operation.
      */
     se.lublin.humla.protobuf.Mumble.ContextActionModify.Operation getOperation();
   }
   /**
+   * <pre>
+   * Used to add or remove custom context menu item on client-side.
+   * </pre>
+   *
    * Protobuf type {@code MumbleProto.ContextActionModify}
    */
   public  static final class ContextActionModify extends
@@ -27739,7 +30183,7 @@ public final class Mumble {
     private volatile java.lang.Object action_;
     /**
      * <pre>
-     * The action name.
+     * The action identifier. Used later to initiate an action.
      * </pre>
      *
      * <code>required string action = 1;</code>
@@ -27750,7 +30194,7 @@ public final class Mumble {
     }
     /**
      * <pre>
-     * The action name.
+     * The action identifier. Used later to initiate an action.
      * </pre>
      *
      * <code>required string action = 1;</code>
@@ -27761,7 +30205,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -27772,7 +30216,7 @@ public final class Mumble {
     }
     /**
      * <pre>
-     * The action name.
+     * The action identifier. Used later to initiate an action.
      * </pre>
      *
      * <code>required string action = 1;</code>
@@ -27782,7 +30226,7 @@ public final class Mumble {
         getActionBytes() {
       java.lang.Object ref = action_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         action_ = b;
@@ -27818,7 +30262,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -27839,7 +30283,7 @@ public final class Mumble {
         getTextBytes() {
       java.lang.Object ref = text_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         text_ = b;
@@ -27854,6 +30298,7 @@ public final class Mumble {
     /**
      * <pre>
      * Context bit flags defining where the action should be displayed.
+     * Flags can be OR-ed to combine different types.
      * </pre>
      *
      * <code>optional uint32 context = 3;</code>
@@ -27865,6 +30310,7 @@ public final class Mumble {
     /**
      * <pre>
      * Context bit flags defining where the action should be displayed.
+     * Flags can be OR-ed to combine different types.
      * </pre>
      *
      * <code>optional uint32 context = 3;</code>
@@ -27877,6 +30323,13 @@ public final class Mumble {
     public static final int OPERATION_FIELD_NUMBER = 4;
     private int operation_;
     /**
+     * <pre>
+     * Choose either to add or to remove the context action.
+     * Note: This field only exists after Mumble 1.2.4-beta1 release.
+     *       The message will be recognized as Add regardless of this field
+     *       before said release.
+     * </pre>
+     *
      * <code>optional .MumbleProto.ContextActionModify.Operation operation = 4;</code>
      * @return Whether the operation field is set.
      */
@@ -27884,6 +30337,13 @@ public final class Mumble {
       return ((bitField0_ & 0x00000008) != 0);
     }
     /**
+     * <pre>
+     * Choose either to add or to remove the context action.
+     * Note: This field only exists after Mumble 1.2.4-beta1 release.
+     *       The message will be recognized as Add regardless of this field
+     *       before said release.
+     * </pre>
+     *
      * <code>optional .MumbleProto.ContextActionModify.Operation operation = 4;</code>
      * @return The operation.
      */
@@ -28103,6 +30563,10 @@ public final class Mumble {
       return builder;
     }
     /**
+     * <pre>
+     * Used to add or remove custom context menu item on client-side.
+     * </pre>
+     *
      * Protobuf type {@code MumbleProto.ContextActionModify}
      */
     public static final class Builder extends
@@ -28293,7 +30757,7 @@ public final class Mumble {
       private java.lang.Object action_ = "";
       /**
        * <pre>
-       * The action name.
+       * The action identifier. Used later to initiate an action.
        * </pre>
        *
        * <code>required string action = 1;</code>
@@ -28304,7 +30768,7 @@ public final class Mumble {
       }
       /**
        * <pre>
-       * The action name.
+       * The action identifier. Used later to initiate an action.
        * </pre>
        *
        * <code>required string action = 1;</code>
@@ -28326,7 +30790,7 @@ public final class Mumble {
       }
       /**
        * <pre>
-       * The action name.
+       * The action identifier. Used later to initiate an action.
        * </pre>
        *
        * <code>required string action = 1;</code>
@@ -28336,7 +30800,7 @@ public final class Mumble {
           getActionBytes() {
         java.lang.Object ref = action_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           action_ = b;
@@ -28347,7 +30811,7 @@ public final class Mumble {
       }
       /**
        * <pre>
-       * The action name.
+       * The action identifier. Used later to initiate an action.
        * </pre>
        *
        * <code>required string action = 1;</code>
@@ -28366,7 +30830,7 @@ public final class Mumble {
       }
       /**
        * <pre>
-       * The action name.
+       * The action identifier. Used later to initiate an action.
        * </pre>
        *
        * <code>required string action = 1;</code>
@@ -28380,7 +30844,7 @@ public final class Mumble {
       }
       /**
        * <pre>
-       * The action name.
+       * The action identifier. Used later to initiate an action.
        * </pre>
        *
        * <code>required string action = 1;</code>
@@ -28444,7 +30908,7 @@ public final class Mumble {
           getTextBytes() {
         java.lang.Object ref = text_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           text_ = b;
@@ -28510,6 +30974,7 @@ public final class Mumble {
       /**
        * <pre>
        * Context bit flags defining where the action should be displayed.
+       * Flags can be OR-ed to combine different types.
        * </pre>
        *
        * <code>optional uint32 context = 3;</code>
@@ -28521,6 +30986,7 @@ public final class Mumble {
       /**
        * <pre>
        * Context bit flags defining where the action should be displayed.
+       * Flags can be OR-ed to combine different types.
        * </pre>
        *
        * <code>optional uint32 context = 3;</code>
@@ -28532,6 +30998,7 @@ public final class Mumble {
       /**
        * <pre>
        * Context bit flags defining where the action should be displayed.
+       * Flags can be OR-ed to combine different types.
        * </pre>
        *
        * <code>optional uint32 context = 3;</code>
@@ -28547,6 +31014,7 @@ public final class Mumble {
       /**
        * <pre>
        * Context bit flags defining where the action should be displayed.
+       * Flags can be OR-ed to combine different types.
        * </pre>
        *
        * <code>optional uint32 context = 3;</code>
@@ -28561,6 +31029,13 @@ public final class Mumble {
 
       private int operation_ = 0;
       /**
+       * <pre>
+       * Choose either to add or to remove the context action.
+       * Note: This field only exists after Mumble 1.2.4-beta1 release.
+       *       The message will be recognized as Add regardless of this field
+       *       before said release.
+       * </pre>
+       *
        * <code>optional .MumbleProto.ContextActionModify.Operation operation = 4;</code>
        * @return Whether the operation field is set.
        */
@@ -28568,6 +31043,13 @@ public final class Mumble {
         return ((bitField0_ & 0x00000008) != 0);
       }
       /**
+       * <pre>
+       * Choose either to add or to remove the context action.
+       * Note: This field only exists after Mumble 1.2.4-beta1 release.
+       *       The message will be recognized as Add regardless of this field
+       *       before said release.
+       * </pre>
+       *
        * <code>optional .MumbleProto.ContextActionModify.Operation operation = 4;</code>
        * @return The operation.
        */
@@ -28577,6 +31059,13 @@ public final class Mumble {
         return result == null ? se.lublin.humla.protobuf.Mumble.ContextActionModify.Operation.Add : result;
       }
       /**
+       * <pre>
+       * Choose either to add or to remove the context action.
+       * Note: This field only exists after Mumble 1.2.4-beta1 release.
+       *       The message will be recognized as Add regardless of this field
+       *       before said release.
+       * </pre>
+       *
        * <code>optional .MumbleProto.ContextActionModify.Operation operation = 4;</code>
        * @param value The operation to set.
        * @return This builder for chaining.
@@ -28591,6 +31080,13 @@ public final class Mumble {
         return this;
       }
       /**
+       * <pre>
+       * Choose either to add or to remove the context action.
+       * Note: This field only exists after Mumble 1.2.4-beta1 release.
+       *       The message will be recognized as Add regardless of this field
+       *       before said release.
+       * </pre>
+       *
        * <code>optional .MumbleProto.ContextActionModify.Operation operation = 4;</code>
        * @return This builder for chaining.
        */
@@ -28900,7 +31396,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -28921,7 +31417,7 @@ public final class Mumble {
         getActionBytes() {
       java.lang.Object ref = action_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         action_ = b;
@@ -29459,7 +31955,7 @@ public final class Mumble {
           getActionBytes() {
         java.lang.Object ref = action_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           action_ = b;
@@ -29584,7 +32080,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.UserList.User users = 1;</code>
      */
-    java.util.List<se.lublin.humla.protobuf.Mumble.UserList.User> 
+    java.util.List<se.lublin.humla.protobuf.Mumble.UserList.User>
         getUsersList();
     /**
      * <pre>
@@ -29609,7 +32105,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.UserList.User users = 1;</code>
      */
-    java.util.List<? extends se.lublin.humla.protobuf.Mumble.UserList.UserOrBuilder> 
+    java.util.List<? extends se.lublin.humla.protobuf.Mumble.UserList.UserOrBuilder>
         getUsersOrBuilderList();
     /**
      * <pre>
@@ -29950,7 +32446,7 @@ public final class Mumble {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs = 
+          com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -29971,7 +32467,7 @@ public final class Mumble {
           getNameBytes() {
         java.lang.Object ref = name_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           name_ = b;
@@ -29999,7 +32495,7 @@ public final class Mumble {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs = 
+          com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -30016,7 +32512,7 @@ public final class Mumble {
           getLastSeenBytes() {
         java.lang.Object ref = lastSeen_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           lastSeen_ = b;
@@ -30540,7 +33036,7 @@ public final class Mumble {
             getNameBytes() {
           java.lang.Object ref = name_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString b =
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             name_ = b;
@@ -30636,7 +33132,7 @@ public final class Mumble {
             getLastSeenBytes() {
           java.lang.Object ref = lastSeen_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString b =
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             lastSeen_ = b;
@@ -30794,7 +33290,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.UserList.User users = 1;</code>
      */
-    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.UserList.UserOrBuilder> 
+    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.UserList.UserOrBuilder>
         getUsersOrBuilderList() {
       return users_;
     }
@@ -31144,7 +33640,7 @@ public final class Mumble {
               usersBuilder_ = null;
               users_ = other.users_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              usersBuilder_ = 
+              usersBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getUsersFieldBuilder() : null;
             } else {
@@ -31442,7 +33938,7 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.UserList.User users = 1;</code>
        */
-      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.UserList.UserOrBuilder> 
+      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.UserList.UserOrBuilder>
            getUsersOrBuilderList() {
         if (usersBuilder_ != null) {
           return usersBuilder_.getMessageOrBuilderList();
@@ -31480,12 +33976,12 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.UserList.User users = 1;</code>
        */
-      public java.util.List<se.lublin.humla.protobuf.Mumble.UserList.User.Builder> 
+      public java.util.List<se.lublin.humla.protobuf.Mumble.UserList.User.Builder>
            getUsersBuilderList() {
         return getUsersFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          se.lublin.humla.protobuf.Mumble.UserList.User, se.lublin.humla.protobuf.Mumble.UserList.User.Builder, se.lublin.humla.protobuf.Mumble.UserList.UserOrBuilder> 
+          se.lublin.humla.protobuf.Mumble.UserList.User, se.lublin.humla.protobuf.Mumble.UserList.User.Builder, se.lublin.humla.protobuf.Mumble.UserList.UserOrBuilder>
           getUsersFieldBuilder() {
         if (usersBuilder_ == null) {
           usersBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -31581,7 +34077,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.VoiceTarget.Target targets = 2;</code>
      */
-    java.util.List<se.lublin.humla.protobuf.Mumble.VoiceTarget.Target> 
+    java.util.List<se.lublin.humla.protobuf.Mumble.VoiceTarget.Target>
         getTargetsList();
     /**
      * <pre>
@@ -31606,7 +34102,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.VoiceTarget.Target targets = 2;</code>
      */
-    java.util.List<? extends se.lublin.humla.protobuf.Mumble.VoiceTarget.TargetOrBuilder> 
+    java.util.List<? extends se.lublin.humla.protobuf.Mumble.VoiceTarget.TargetOrBuilder>
         getTargetsOrBuilderList();
     /**
      * <pre>
@@ -32056,7 +34552,7 @@ public final class Mumble {
         if (ref instanceof java.lang.String) {
           return (java.lang.String) ref;
         } else {
-          com.google.protobuf.ByteString bs = 
+          com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
@@ -32077,7 +34573,7 @@ public final class Mumble {
           getGroupBytes() {
         java.lang.Object ref = group_;
         if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           group_ = b;
@@ -32772,7 +35268,7 @@ public final class Mumble {
             getGroupBytes() {
           java.lang.Object ref = group_;
           if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString b =
                 com.google.protobuf.ByteString.copyFromUtf8(
                     (java.lang.String) ref);
             group_ = b;
@@ -33041,7 +35537,7 @@ public final class Mumble {
      *
      * <code>repeated .MumbleProto.VoiceTarget.Target targets = 2;</code>
      */
-    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.VoiceTarget.TargetOrBuilder> 
+    public java.util.List<? extends se.lublin.humla.protobuf.Mumble.VoiceTarget.TargetOrBuilder>
         getTargetsOrBuilderList() {
       return targets_;
     }
@@ -33414,7 +35910,7 @@ public final class Mumble {
               targetsBuilder_ = null;
               targets_ = other.targets_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              targetsBuilder_ = 
+              targetsBuilder_ =
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getTargetsFieldBuilder() : null;
             } else {
@@ -33760,7 +36256,7 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.VoiceTarget.Target targets = 2;</code>
        */
-      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.VoiceTarget.TargetOrBuilder> 
+      public java.util.List<? extends se.lublin.humla.protobuf.Mumble.VoiceTarget.TargetOrBuilder>
            getTargetsOrBuilderList() {
         if (targetsBuilder_ != null) {
           return targetsBuilder_.getMessageOrBuilderList();
@@ -33798,12 +36294,12 @@ public final class Mumble {
        *
        * <code>repeated .MumbleProto.VoiceTarget.Target targets = 2;</code>
        */
-      public java.util.List<se.lublin.humla.protobuf.Mumble.VoiceTarget.Target.Builder> 
+      public java.util.List<se.lublin.humla.protobuf.Mumble.VoiceTarget.Target.Builder>
            getTargetsBuilderList() {
         return getTargetsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          se.lublin.humla.protobuf.Mumble.VoiceTarget.Target, se.lublin.humla.protobuf.Mumble.VoiceTarget.Target.Builder, se.lublin.humla.protobuf.Mumble.VoiceTarget.TargetOrBuilder> 
+          se.lublin.humla.protobuf.Mumble.VoiceTarget.Target, se.lublin.humla.protobuf.Mumble.VoiceTarget.Target.Builder, se.lublin.humla.protobuf.Mumble.VoiceTarget.TargetOrBuilder>
           getTargetsFieldBuilder() {
         if (targetsBuilder_ == null) {
           targetsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
@@ -35948,7 +38444,7 @@ public final class Mumble {
 
     /**
      * <pre>
-     * Bandwith used by this client.
+     * Bandwidth used by this client.
      * </pre>
      *
      * <code>optional uint32 bandwidth = 15;</code>
@@ -35957,7 +38453,7 @@ public final class Mumble {
     boolean hasBandwidth();
     /**
      * <pre>
-     * Bandwith used by this client.
+     * Bandwidth used by this client.
      * </pre>
      *
      * <code>optional uint32 bandwidth = 15;</code>
@@ -37608,7 +40104,7 @@ public final class Mumble {
     private int bandwidth_;
     /**
      * <pre>
-     * Bandwith used by this client.
+     * Bandwidth used by this client.
      * </pre>
      *
      * <code>optional uint32 bandwidth = 15;</code>
@@ -37619,7 +40115,7 @@ public final class Mumble {
     }
     /**
      * <pre>
-     * Bandwith used by this client.
+     * Bandwidth used by this client.
      * </pre>
      *
      * <code>optional uint32 bandwidth = 15;</code>
@@ -38909,7 +41405,7 @@ public final class Mumble {
        * <code>optional .MumbleProto.UserStats.Stats from_client = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          se.lublin.humla.protobuf.Mumble.UserStats.Stats, se.lublin.humla.protobuf.Mumble.UserStats.Stats.Builder, se.lublin.humla.protobuf.Mumble.UserStats.StatsOrBuilder> 
+          se.lublin.humla.protobuf.Mumble.UserStats.Stats, se.lublin.humla.protobuf.Mumble.UserStats.Stats.Builder, se.lublin.humla.protobuf.Mumble.UserStats.StatsOrBuilder>
           getFromClientFieldBuilder() {
         if (fromClientBuilder_ == null) {
           fromClientBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -39065,7 +41561,7 @@ public final class Mumble {
        * <code>optional .MumbleProto.UserStats.Stats from_server = 5;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          se.lublin.humla.protobuf.Mumble.UserStats.Stats, se.lublin.humla.protobuf.Mumble.UserStats.Stats.Builder, se.lublin.humla.protobuf.Mumble.UserStats.StatsOrBuilder> 
+          se.lublin.humla.protobuf.Mumble.UserStats.Stats, se.lublin.humla.protobuf.Mumble.UserStats.Stats.Builder, se.lublin.humla.protobuf.Mumble.UserStats.StatsOrBuilder>
           getFromServerFieldBuilder() {
         if (fromServerBuilder_ == null) {
           fromServerBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -39539,7 +42035,7 @@ public final class Mumble {
        * <code>optional .MumbleProto.Version version = 12;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          se.lublin.humla.protobuf.Mumble.Version, se.lublin.humla.protobuf.Mumble.Version.Builder, se.lublin.humla.protobuf.Mumble.VersionOrBuilder> 
+          se.lublin.humla.protobuf.Mumble.Version, se.lublin.humla.protobuf.Mumble.Version.Builder, se.lublin.humla.protobuf.Mumble.VersionOrBuilder>
           getVersionFieldBuilder() {
         if (versionBuilder_ == null) {
           versionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
@@ -39725,7 +42221,7 @@ public final class Mumble {
       private int bandwidth_ ;
       /**
        * <pre>
-       * Bandwith used by this client.
+       * Bandwidth used by this client.
        * </pre>
        *
        * <code>optional uint32 bandwidth = 15;</code>
@@ -39736,7 +42232,7 @@ public final class Mumble {
       }
       /**
        * <pre>
-       * Bandwith used by this client.
+       * Bandwidth used by this client.
        * </pre>
        *
        * <code>optional uint32 bandwidth = 15;</code>
@@ -39747,7 +42243,7 @@ public final class Mumble {
       }
       /**
        * <pre>
-       * Bandwith used by this client.
+       * Bandwidth used by this client.
        * </pre>
        *
        * <code>optional uint32 bandwidth = 15;</code>
@@ -39762,7 +42258,7 @@ public final class Mumble {
       }
       /**
        * <pre>
-       * Bandwith used by this client.
+       * Bandwidth used by this client.
        * </pre>
        *
        * <code>optional uint32 bandwidth = 15;</code>
@@ -41295,6 +43791,25 @@ public final class Mumble {
      * @return The maxUsers.
      */
     int getMaxUsers();
+
+    /**
+     * <pre>
+     * Whether using Mumble's recording feature is allowed on the server
+     * </pre>
+     *
+     * <code>optional bool recording_allowed = 7;</code>
+     * @return Whether the recordingAllowed field is set.
+     */
+    boolean hasRecordingAllowed();
+    /**
+     * <pre>
+     * Whether using Mumble's recording feature is allowed on the server
+     * </pre>
+     *
+     * <code>optional bool recording_allowed = 7;</code>
+     * @return The recordingAllowed.
+     */
+    boolean getRecordingAllowed();
   }
   /**
    * <pre>
@@ -41377,6 +43892,11 @@ public final class Mumble {
             case 48: {
               bitField0_ |= 0x00000020;
               maxUsers_ = input.readUInt32();
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000040;
+              recordingAllowed_ = input.readBool();
               break;
             }
             default: {
@@ -41463,7 +43983,7 @@ public final class Mumble {
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
@@ -41484,7 +44004,7 @@ public final class Mumble {
         getWelcomeTextBytes() {
       java.lang.Object ref = welcomeText_;
       if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         welcomeText_ = b;
@@ -41594,6 +44114,31 @@ public final class Mumble {
       return maxUsers_;
     }
 
+    public static final int RECORDING_ALLOWED_FIELD_NUMBER = 7;
+    private boolean recordingAllowed_;
+    /**
+     * <pre>
+     * Whether using Mumble's recording feature is allowed on the server
+     * </pre>
+     *
+     * <code>optional bool recording_allowed = 7;</code>
+     * @return Whether the recordingAllowed field is set.
+     */
+    public boolean hasRecordingAllowed() {
+      return ((bitField0_ & 0x00000040) != 0);
+    }
+    /**
+     * <pre>
+     * Whether using Mumble's recording feature is allowed on the server
+     * </pre>
+     *
+     * <code>optional bool recording_allowed = 7;</code>
+     * @return The recordingAllowed.
+     */
+    public boolean getRecordingAllowed() {
+      return recordingAllowed_;
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -41626,6 +44171,9 @@ public final class Mumble {
       if (((bitField0_ & 0x00000020) != 0)) {
         output.writeUInt32(6, maxUsers_);
       }
+      if (((bitField0_ & 0x00000040) != 0)) {
+        output.writeBool(7, recordingAllowed_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -41657,6 +44205,10 @@ public final class Mumble {
       if (((bitField0_ & 0x00000020) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(6, maxUsers_);
+      }
+      if (((bitField0_ & 0x00000040) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(7, recordingAllowed_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -41703,6 +44255,11 @@ public final class Mumble {
         if (getMaxUsers()
             != other.getMaxUsers()) return false;
       }
+      if (hasRecordingAllowed() != other.hasRecordingAllowed()) return false;
+      if (hasRecordingAllowed()) {
+        if (getRecordingAllowed()
+            != other.getRecordingAllowed()) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -41738,6 +44295,11 @@ public final class Mumble {
       if (hasMaxUsers()) {
         hash = (37 * hash) + MAX_USERS_FIELD_NUMBER;
         hash = (53 * hash) + getMaxUsers();
+      }
+      if (hasRecordingAllowed()) {
+        hash = (37 * hash) + RECORDING_ALLOWED_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getRecordingAllowed());
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -41889,6 +44451,8 @@ public final class Mumble {
         bitField0_ = (bitField0_ & ~0x00000010);
         maxUsers_ = 0;
         bitField0_ = (bitField0_ & ~0x00000020);
+        recordingAllowed_ = false;
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -41940,6 +44504,10 @@ public final class Mumble {
         if (((from_bitField0_ & 0x00000020) != 0)) {
           result.maxUsers_ = maxUsers_;
           to_bitField0_ |= 0x00000020;
+        }
+        if (((from_bitField0_ & 0x00000040) != 0)) {
+          result.recordingAllowed_ = recordingAllowed_;
+          to_bitField0_ |= 0x00000040;
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -42009,6 +44577,9 @@ public final class Mumble {
         }
         if (other.hasMaxUsers()) {
           setMaxUsers(other.getMaxUsers());
+        }
+        if (other.hasRecordingAllowed()) {
+          setRecordingAllowed(other.getRecordingAllowed());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -42139,7 +44710,7 @@ public final class Mumble {
           getWelcomeTextBytes() {
         java.lang.Object ref = welcomeText_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
           welcomeText_ = b;
@@ -42412,6 +44983,59 @@ public final class Mumble {
         onChanged();
         return this;
       }
+
+      private boolean recordingAllowed_ ;
+      /**
+       * <pre>
+       * Whether using Mumble's recording feature is allowed on the server
+       * </pre>
+       *
+       * <code>optional bool recording_allowed = 7;</code>
+       * @return Whether the recordingAllowed field is set.
+       */
+      public boolean hasRecordingAllowed() {
+        return ((bitField0_ & 0x00000040) != 0);
+      }
+      /**
+       * <pre>
+       * Whether using Mumble's recording feature is allowed on the server
+       * </pre>
+       *
+       * <code>optional bool recording_allowed = 7;</code>
+       * @return The recordingAllowed.
+       */
+      public boolean getRecordingAllowed() {
+        return recordingAllowed_;
+      }
+      /**
+       * <pre>
+       * Whether using Mumble's recording feature is allowed on the server
+       * </pre>
+       *
+       * <code>optional bool recording_allowed = 7;</code>
+       * @param value The recordingAllowed to set.
+       * @return This builder for chaining.
+       */
+      public Builder setRecordingAllowed(boolean value) {
+        bitField0_ |= 0x00000040;
+        recordingAllowed_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Whether using Mumble's recording feature is allowed on the server
+       * </pre>
+       *
+       * <code>optional bool recording_allowed = 7;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearRecordingAllowed() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        recordingAllowed_ = false;
+        onChanged();
+        return this;
+      }
       @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -42471,22 +45095,43 @@ public final class Mumble {
 
     /**
      * <pre>
-     * Suggested client version.
+     * Suggested client version in the legacy format.
      * </pre>
      *
-     * <code>optional uint32 version = 1;</code>
-     * @return Whether the version field is set.
+     * <code>optional uint32 version_v1 = 1;</code>
+     * @return Whether the versionV1 field is set.
      */
-    boolean hasVersion();
+    boolean hasVersionV1();
     /**
      * <pre>
-     * Suggested client version.
+     * Suggested client version in the legacy format.
      * </pre>
      *
-     * <code>optional uint32 version = 1;</code>
-     * @return The version.
+     * <code>optional uint32 version_v1 = 1;</code>
+     * @return The versionV1.
      */
-    int getVersion();
+    int getVersionV1();
+
+    /**
+     * <pre>
+     * Suggested client version in the new format.
+     * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+     * </pre>
+     *
+     * <code>optional uint64 version_v2 = 4;</code>
+     * @return Whether the versionV2 field is set.
+     */
+    boolean hasVersionV2();
+    /**
+     * <pre>
+     * Suggested client version in the new format.
+     * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+     * </pre>
+     *
+     * <code>optional uint64 version_v2 = 4;</code>
+     * @return The versionV2.
+     */
+    long getVersionV2();
 
     /**
      * <pre>
@@ -42581,17 +45226,22 @@ public final class Mumble {
               break;
             case 8: {
               bitField0_ |= 0x00000001;
-              version_ = input.readUInt32();
+              versionV1_ = input.readUInt32();
               break;
             }
             case 16: {
-              bitField0_ |= 0x00000002;
+              bitField0_ |= 0x00000004;
               positional_ = input.readBool();
               break;
             }
             case 24: {
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000008;
               pushToTalk_ = input.readBool();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000002;
+              versionV2_ = input.readUInt64();
               break;
             }
             default: {
@@ -42627,29 +45277,56 @@ public final class Mumble {
     }
 
     private int bitField0_;
-    public static final int VERSION_FIELD_NUMBER = 1;
-    private int version_;
+    public static final int VERSION_V1_FIELD_NUMBER = 1;
+    private int versionV1_;
     /**
      * <pre>
-     * Suggested client version.
+     * Suggested client version in the legacy format.
      * </pre>
      *
-     * <code>optional uint32 version = 1;</code>
-     * @return Whether the version field is set.
+     * <code>optional uint32 version_v1 = 1;</code>
+     * @return Whether the versionV1 field is set.
      */
-    public boolean hasVersion() {
+    public boolean hasVersionV1() {
       return ((bitField0_ & 0x00000001) != 0);
     }
     /**
      * <pre>
-     * Suggested client version.
+     * Suggested client version in the legacy format.
      * </pre>
      *
-     * <code>optional uint32 version = 1;</code>
-     * @return The version.
+     * <code>optional uint32 version_v1 = 1;</code>
+     * @return The versionV1.
      */
-    public int getVersion() {
-      return version_;
+    public int getVersionV1() {
+      return versionV1_;
+    }
+
+    public static final int VERSION_V2_FIELD_NUMBER = 4;
+    private long versionV2_;
+    /**
+     * <pre>
+     * Suggested client version in the new format.
+     * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+     * </pre>
+     *
+     * <code>optional uint64 version_v2 = 4;</code>
+     * @return Whether the versionV2 field is set.
+     */
+    public boolean hasVersionV2() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <pre>
+     * Suggested client version in the new format.
+     * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+     * </pre>
+     *
+     * <code>optional uint64 version_v2 = 4;</code>
+     * @return The versionV2.
+     */
+    public long getVersionV2() {
+      return versionV2_;
     }
 
     public static final int POSITIONAL_FIELD_NUMBER = 2;
@@ -42664,7 +45341,7 @@ public final class Mumble {
      * @return Whether the positional field is set.
      */
     public boolean hasPositional() {
-      return ((bitField0_ & 0x00000002) != 0);
+      return ((bitField0_ & 0x00000004) != 0);
     }
     /**
      * <pre>
@@ -42690,7 +45367,7 @@ public final class Mumble {
      * @return Whether the pushToTalk field is set.
      */
     public boolean hasPushToTalk() {
-      return ((bitField0_ & 0x00000004) != 0);
+      return ((bitField0_ & 0x00000008) != 0);
     }
     /**
      * <pre>
@@ -42719,13 +45396,16 @@ public final class Mumble {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) != 0)) {
-        output.writeUInt32(1, version_);
-      }
-      if (((bitField0_ & 0x00000002) != 0)) {
-        output.writeBool(2, positional_);
+        output.writeUInt32(1, versionV1_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
+        output.writeBool(2, positional_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
         output.writeBool(3, pushToTalk_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeUInt64(4, versionV2_);
       }
       unknownFields.writeTo(output);
     }
@@ -42738,15 +45418,19 @@ public final class Mumble {
       size = 0;
       if (((bitField0_ & 0x00000001) != 0)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt32Size(1, version_);
-      }
-      if (((bitField0_ & 0x00000002) != 0)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(2, positional_);
+          .computeUInt32Size(1, versionV1_);
       }
       if (((bitField0_ & 0x00000004) != 0)) {
         size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, positional_);
+      }
+      if (((bitField0_ & 0x00000008) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(3, pushToTalk_);
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(4, versionV2_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -42763,10 +45447,15 @@ public final class Mumble {
       }
       se.lublin.humla.protobuf.Mumble.SuggestConfig other = (se.lublin.humla.protobuf.Mumble.SuggestConfig) obj;
 
-      if (hasVersion() != other.hasVersion()) return false;
-      if (hasVersion()) {
-        if (getVersion()
-            != other.getVersion()) return false;
+      if (hasVersionV1() != other.hasVersionV1()) return false;
+      if (hasVersionV1()) {
+        if (getVersionV1()
+            != other.getVersionV1()) return false;
+      }
+      if (hasVersionV2() != other.hasVersionV2()) return false;
+      if (hasVersionV2()) {
+        if (getVersionV2()
+            != other.getVersionV2()) return false;
       }
       if (hasPositional() != other.hasPositional()) return false;
       if (hasPositional()) {
@@ -42789,9 +45478,14 @@ public final class Mumble {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      if (hasVersion()) {
-        hash = (37 * hash) + VERSION_FIELD_NUMBER;
-        hash = (53 * hash) + getVersion();
+      if (hasVersionV1()) {
+        hash = (37 * hash) + VERSION_V1_FIELD_NUMBER;
+        hash = (53 * hash) + getVersionV1();
+      }
+      if (hasVersionV2()) {
+        hash = (37 * hash) + VERSION_V2_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getVersionV2());
       }
       if (hasPositional()) {
         hash = (37 * hash) + POSITIONAL_FIELD_NUMBER;
@@ -42941,12 +45635,14 @@ public final class Mumble {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        version_ = 0;
+        versionV1_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        positional_ = false;
+        versionV2_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000002);
-        pushToTalk_ = false;
+        positional_ = false;
         bitField0_ = (bitField0_ & ~0x00000004);
+        pushToTalk_ = false;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -42976,16 +45672,20 @@ public final class Mumble {
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
-          result.version_ = version_;
+          result.versionV1_ = versionV1_;
           to_bitField0_ |= 0x00000001;
         }
         if (((from_bitField0_ & 0x00000002) != 0)) {
-          result.positional_ = positional_;
+          result.versionV2_ = versionV2_;
           to_bitField0_ |= 0x00000002;
         }
         if (((from_bitField0_ & 0x00000004) != 0)) {
-          result.pushToTalk_ = pushToTalk_;
+          result.positional_ = positional_;
           to_bitField0_ |= 0x00000004;
+        }
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          result.pushToTalk_ = pushToTalk_;
+          to_bitField0_ |= 0x00000008;
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -43036,8 +45736,11 @@ public final class Mumble {
 
       public Builder mergeFrom(se.lublin.humla.protobuf.Mumble.SuggestConfig other) {
         if (other == se.lublin.humla.protobuf.Mumble.SuggestConfig.getDefaultInstance()) return this;
-        if (other.hasVersion()) {
-          setVersion(other.getVersion());
+        if (other.hasVersionV1()) {
+          setVersionV1(other.getVersionV1());
+        }
+        if (other.hasVersionV2()) {
+          setVersionV2(other.getVersionV2());
         }
         if (other.hasPositional()) {
           setPositional(other.getPositional());
@@ -43075,55 +45778,112 @@ public final class Mumble {
       }
       private int bitField0_;
 
-      private int version_ ;
+      private int versionV1_ ;
       /**
        * <pre>
-       * Suggested client version.
+       * Suggested client version in the legacy format.
        * </pre>
        *
-       * <code>optional uint32 version = 1;</code>
-       * @return Whether the version field is set.
+       * <code>optional uint32 version_v1 = 1;</code>
+       * @return Whether the versionV1 field is set.
        */
-      public boolean hasVersion() {
+      public boolean hasVersionV1() {
         return ((bitField0_ & 0x00000001) != 0);
       }
       /**
        * <pre>
-       * Suggested client version.
+       * Suggested client version in the legacy format.
        * </pre>
        *
-       * <code>optional uint32 version = 1;</code>
-       * @return The version.
+       * <code>optional uint32 version_v1 = 1;</code>
+       * @return The versionV1.
        */
-      public int getVersion() {
-        return version_;
+      public int getVersionV1() {
+        return versionV1_;
       }
       /**
        * <pre>
-       * Suggested client version.
+       * Suggested client version in the legacy format.
        * </pre>
        *
-       * <code>optional uint32 version = 1;</code>
-       * @param value The version to set.
+       * <code>optional uint32 version_v1 = 1;</code>
+       * @param value The versionV1 to set.
        * @return This builder for chaining.
        */
-      public Builder setVersion(int value) {
+      public Builder setVersionV1(int value) {
         bitField0_ |= 0x00000001;
-        version_ = value;
+        versionV1_ = value;
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * Suggested client version.
+       * Suggested client version in the legacy format.
        * </pre>
        *
-       * <code>optional uint32 version = 1;</code>
+       * <code>optional uint32 version_v1 = 1;</code>
        * @return This builder for chaining.
        */
-      public Builder clearVersion() {
+      public Builder clearVersionV1() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        version_ = 0;
+        versionV1_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private long versionV2_ ;
+      /**
+       * <pre>
+       * Suggested client version in the new format.
+       * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+       * </pre>
+       *
+       * <code>optional uint64 version_v2 = 4;</code>
+       * @return Whether the versionV2 field is set.
+       */
+      public boolean hasVersionV2() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <pre>
+       * Suggested client version in the new format.
+       * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+       * </pre>
+       *
+       * <code>optional uint64 version_v2 = 4;</code>
+       * @return The versionV2.
+       */
+      public long getVersionV2() {
+        return versionV2_;
+      }
+      /**
+       * <pre>
+       * Suggested client version in the new format.
+       * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+       * </pre>
+       *
+       * <code>optional uint64 version_v2 = 4;</code>
+       * @param value The versionV2 to set.
+       * @return This builder for chaining.
+       */
+      public Builder setVersionV2(long value) {
+        bitField0_ |= 0x00000002;
+        versionV2_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Suggested client version in the new format.
+       * Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+       * </pre>
+       *
+       * <code>optional uint64 version_v2 = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearVersionV2() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        versionV2_ = 0L;
         onChanged();
         return this;
       }
@@ -43139,7 +45899,7 @@ public final class Mumble {
        * @return Whether the positional field is set.
        */
       public boolean hasPositional() {
-        return ((bitField0_ & 0x00000002) != 0);
+        return ((bitField0_ & 0x00000004) != 0);
       }
       /**
        * <pre>
@@ -43164,7 +45924,7 @@ public final class Mumble {
        * @return This builder for chaining.
        */
       public Builder setPositional(boolean value) {
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000004;
         positional_ = value;
         onChanged();
         return this;
@@ -43179,7 +45939,7 @@ public final class Mumble {
        * @return This builder for chaining.
        */
       public Builder clearPositional() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         positional_ = false;
         onChanged();
         return this;
@@ -43195,7 +45955,7 @@ public final class Mumble {
        * @return Whether the pushToTalk field is set.
        */
       public boolean hasPushToTalk() {
-        return ((bitField0_ & 0x00000004) != 0);
+        return ((bitField0_ & 0x00000008) != 0);
       }
       /**
        * <pre>
@@ -43218,7 +45978,7 @@ public final class Mumble {
        * @return This builder for chaining.
        */
       public Builder setPushToTalk(boolean value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
         pushToTalk_ = value;
         onChanged();
         return this;
@@ -43232,7 +45992,7 @@ public final class Mumble {
        * @return This builder for chaining.
        */
       public Builder clearPushToTalk() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         pushToTalk_ = false;
         onChanged();
         return this;
@@ -43290,166 +46050,1350 @@ public final class Mumble {
 
   }
 
+  public interface PluginDataTransmissionOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:MumbleProto.PluginDataTransmission)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     * The session ID of the client this message was sent from
+     * </pre>
+     *
+     * <code>optional uint32 senderSession = 1;</code>
+     * @return Whether the senderSession field is set.
+     */
+    boolean hasSenderSession();
+    /**
+     * <pre>
+     * The session ID of the client this message was sent from
+     * </pre>
+     *
+     * <code>optional uint32 senderSession = 1;</code>
+     * @return The senderSession.
+     */
+    int getSenderSession();
+
+    /**
+     * <pre>
+     * The session IDs of the clients that should receive this message
+     * </pre>
+     *
+     * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+     * @return A list containing the receiverSessions.
+     */
+    java.util.List<java.lang.Integer> getReceiverSessionsList();
+    /**
+     * <pre>
+     * The session IDs of the clients that should receive this message
+     * </pre>
+     *
+     * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+     * @return The count of receiverSessions.
+     */
+    int getReceiverSessionsCount();
+    /**
+     * <pre>
+     * The session IDs of the clients that should receive this message
+     * </pre>
+     *
+     * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+     * @param index The index of the element to return.
+     * @return The receiverSessions at the given index.
+     */
+    int getReceiverSessions(int index);
+
+    /**
+     * <pre>
+     * The data that is sent
+     * </pre>
+     *
+     * <code>optional bytes data = 3;</code>
+     * @return Whether the data field is set.
+     */
+    boolean hasData();
+    /**
+     * <pre>
+     * The data that is sent
+     * </pre>
+     *
+     * <code>optional bytes data = 3;</code>
+     * @return The data.
+     */
+    com.google.protobuf.ByteString getData();
+
+    /**
+     * <pre>
+     * The ID of the sent data. This will be used by plugins to check whether they will
+     * process it or not
+     * </pre>
+     *
+     * <code>optional string dataID = 4;</code>
+     * @return Whether the dataID field is set.
+     */
+    boolean hasDataID();
+    /**
+     * <pre>
+     * The ID of the sent data. This will be used by plugins to check whether they will
+     * process it or not
+     * </pre>
+     *
+     * <code>optional string dataID = 4;</code>
+     * @return The dataID.
+     */
+    java.lang.String getDataID();
+    /**
+     * <pre>
+     * The ID of the sent data. This will be used by plugins to check whether they will
+     * process it or not
+     * </pre>
+     *
+     * <code>optional string dataID = 4;</code>
+     * @return The bytes for dataID.
+     */
+    com.google.protobuf.ByteString
+        getDataIDBytes();
+  }
+  /**
+   * <pre>
+   * Used to send plugin messages between clients
+   * </pre>
+   *
+   * Protobuf type {@code MumbleProto.PluginDataTransmission}
+   */
+  public  static final class PluginDataTransmission extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:MumbleProto.PluginDataTransmission)
+      PluginDataTransmissionOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use PluginDataTransmission.newBuilder() to construct.
+    private PluginDataTransmission(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private PluginDataTransmission() {
+      receiverSessions_ = emptyIntList();
+      data_ = com.google.protobuf.ByteString.EMPTY;
+      dataID_ = "";
+    }
+
+    @java.lang.Override
+    @SuppressWarnings({"unused"})
+    protected java.lang.Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new PluginDataTransmission();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private PluginDataTransmission(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+              bitField0_ |= 0x00000001;
+              senderSession_ = input.readUInt32();
+              break;
+            }
+            case 16: {
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+                receiverSessions_ = newIntList();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              receiverSessions_.addInt(input.readUInt32());
+              break;
+            }
+            case 18: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
+                receiverSessions_ = newIntList();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                receiverSessions_.addInt(input.readUInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000002;
+              data_ = input.readBytes();
+              break;
+            }
+            case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000004;
+              dataID_ = bs;
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
+          receiverSessions_.makeImmutable(); // C
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_PluginDataTransmission_descriptor;
+    }
+
+    @java.lang.Override
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_PluginDataTransmission_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              se.lublin.humla.protobuf.Mumble.PluginDataTransmission.class, se.lublin.humla.protobuf.Mumble.PluginDataTransmission.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int SENDERSESSION_FIELD_NUMBER = 1;
+    private int senderSession_;
+    /**
+     * <pre>
+     * The session ID of the client this message was sent from
+     * </pre>
+     *
+     * <code>optional uint32 senderSession = 1;</code>
+     * @return Whether the senderSession field is set.
+     */
+    public boolean hasSenderSession() {
+      return ((bitField0_ & 0x00000001) != 0);
+    }
+    /**
+     * <pre>
+     * The session ID of the client this message was sent from
+     * </pre>
+     *
+     * <code>optional uint32 senderSession = 1;</code>
+     * @return The senderSession.
+     */
+    public int getSenderSession() {
+      return senderSession_;
+    }
+
+    public static final int RECEIVERSESSIONS_FIELD_NUMBER = 2;
+    private com.google.protobuf.Internal.IntList receiverSessions_;
+    /**
+     * <pre>
+     * The session IDs of the clients that should receive this message
+     * </pre>
+     *
+     * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+     * @return A list containing the receiverSessions.
+     */
+    public java.util.List<java.lang.Integer>
+        getReceiverSessionsList() {
+      return receiverSessions_;
+    }
+    /**
+     * <pre>
+     * The session IDs of the clients that should receive this message
+     * </pre>
+     *
+     * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+     * @return The count of receiverSessions.
+     */
+    public int getReceiverSessionsCount() {
+      return receiverSessions_.size();
+    }
+    /**
+     * <pre>
+     * The session IDs of the clients that should receive this message
+     * </pre>
+     *
+     * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+     * @param index The index of the element to return.
+     * @return The receiverSessions at the given index.
+     */
+    public int getReceiverSessions(int index) {
+      return receiverSessions_.getInt(index);
+    }
+    private int receiverSessionsMemoizedSerializedSize = -1;
+
+    public static final int DATA_FIELD_NUMBER = 3;
+    private com.google.protobuf.ByteString data_;
+    /**
+     * <pre>
+     * The data that is sent
+     * </pre>
+     *
+     * <code>optional bytes data = 3;</code>
+     * @return Whether the data field is set.
+     */
+    public boolean hasData() {
+      return ((bitField0_ & 0x00000002) != 0);
+    }
+    /**
+     * <pre>
+     * The data that is sent
+     * </pre>
+     *
+     * <code>optional bytes data = 3;</code>
+     * @return The data.
+     */
+    public com.google.protobuf.ByteString getData() {
+      return data_;
+    }
+
+    public static final int DATAID_FIELD_NUMBER = 4;
+    private volatile java.lang.Object dataID_;
+    /**
+     * <pre>
+     * The ID of the sent data. This will be used by plugins to check whether they will
+     * process it or not
+     * </pre>
+     *
+     * <code>optional string dataID = 4;</code>
+     * @return Whether the dataID field is set.
+     */
+    public boolean hasDataID() {
+      return ((bitField0_ & 0x00000004) != 0);
+    }
+    /**
+     * <pre>
+     * The ID of the sent data. This will be used by plugins to check whether they will
+     * process it or not
+     * </pre>
+     *
+     * <code>optional string dataID = 4;</code>
+     * @return The dataID.
+     */
+    public java.lang.String getDataID() {
+      java.lang.Object ref = dataID_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          dataID_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * The ID of the sent data. This will be used by plugins to check whether they will
+     * process it or not
+     * </pre>
+     *
+     * <code>optional string dataID = 4;</code>
+     * @return The bytes for dataID.
+     */
+    public com.google.protobuf.ByteString
+        getDataIDBytes() {
+      java.lang.Object ref = dataID_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        dataID_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    @java.lang.Override
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    @java.lang.Override
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) != 0)) {
+        output.writeUInt32(1, senderSession_);
+      }
+      if (getReceiverSessionsList().size() > 0) {
+        output.writeUInt32NoTag(18);
+        output.writeUInt32NoTag(receiverSessionsMemoizedSerializedSize);
+      }
+      for (int i = 0; i < receiverSessions_.size(); i++) {
+        output.writeUInt32NoTag(receiverSessions_.getInt(i));
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        output.writeBytes(3, data_);
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, dataID_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    @java.lang.Override
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(1, senderSession_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < receiverSessions_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeUInt32SizeNoTag(receiverSessions_.getInt(i));
+        }
+        size += dataSize;
+        if (!getReceiverSessionsList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        receiverSessionsMemoizedSerializedSize = dataSize;
+      }
+      if (((bitField0_ & 0x00000002) != 0)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, data_);
+      }
+      if (((bitField0_ & 0x00000004) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, dataID_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof se.lublin.humla.protobuf.Mumble.PluginDataTransmission)) {
+        return super.equals(obj);
+      }
+      se.lublin.humla.protobuf.Mumble.PluginDataTransmission other = (se.lublin.humla.protobuf.Mumble.PluginDataTransmission) obj;
+
+      if (hasSenderSession() != other.hasSenderSession()) return false;
+      if (hasSenderSession()) {
+        if (getSenderSession()
+            != other.getSenderSession()) return false;
+      }
+      if (!getReceiverSessionsList()
+          .equals(other.getReceiverSessionsList())) return false;
+      if (hasData() != other.hasData()) return false;
+      if (hasData()) {
+        if (!getData()
+            .equals(other.getData())) return false;
+      }
+      if (hasDataID() != other.hasDataID()) return false;
+      if (hasDataID()) {
+        if (!getDataID()
+            .equals(other.getDataID())) return false;
+      }
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      if (hasSenderSession()) {
+        hash = (37 * hash) + SENDERSESSION_FIELD_NUMBER;
+        hash = (53 * hash) + getSenderSession();
+      }
+      if (getReceiverSessionsCount() > 0) {
+        hash = (37 * hash) + RECEIVERSESSIONS_FIELD_NUMBER;
+        hash = (53 * hash) + getReceiverSessionsList().hashCode();
+      }
+      if (hasData()) {
+        hash = (37 * hash) + DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getData().hashCode();
+      }
+      if (hasDataID()) {
+        hash = (37 * hash) + DATAID_FIELD_NUMBER;
+        hash = (53 * hash) + getDataID().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    @java.lang.Override
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(se.lublin.humla.protobuf.Mumble.PluginDataTransmission prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    @java.lang.Override
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * Used to send plugin messages between clients
+     * </pre>
+     *
+     * Protobuf type {@code MumbleProto.PluginDataTransmission}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:MumbleProto.PluginDataTransmission)
+        se.lublin.humla.protobuf.Mumble.PluginDataTransmissionOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_PluginDataTransmission_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_PluginDataTransmission_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                se.lublin.humla.protobuf.Mumble.PluginDataTransmission.class, se.lublin.humla.protobuf.Mumble.PluginDataTransmission.Builder.class);
+      }
+
+      // Construct using se.lublin.humla.protobuf.Mumble.PluginDataTransmission.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      @java.lang.Override
+      public Builder clear() {
+        super.clear();
+        senderSession_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        receiverSessions_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        data_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        dataID_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return se.lublin.humla.protobuf.Mumble.internal_static_MumbleProto_PluginDataTransmission_descriptor;
+      }
+
+      @java.lang.Override
+      public se.lublin.humla.protobuf.Mumble.PluginDataTransmission getDefaultInstanceForType() {
+        return se.lublin.humla.protobuf.Mumble.PluginDataTransmission.getDefaultInstance();
+      }
+
+      @java.lang.Override
+      public se.lublin.humla.protobuf.Mumble.PluginDataTransmission build() {
+        se.lublin.humla.protobuf.Mumble.PluginDataTransmission result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      @java.lang.Override
+      public se.lublin.humla.protobuf.Mumble.PluginDataTransmission buildPartial() {
+        se.lublin.humla.protobuf.Mumble.PluginDataTransmission result = new se.lublin.humla.protobuf.Mumble.PluginDataTransmission(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) != 0)) {
+          result.senderSession_ = senderSession_;
+          to_bitField0_ |= 0x00000001;
+        }
+        if (((bitField0_ & 0x00000002) != 0)) {
+          receiverSessions_.makeImmutable();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.receiverSessions_ = receiverSessions_;
+        if (((from_bitField0_ & 0x00000004) != 0)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.data_ = data_;
+        if (((from_bitField0_ & 0x00000008) != 0)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.dataID_ = dataID_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      @java.lang.Override
+      public Builder clone() {
+        return super.clone();
+      }
+      @java.lang.Override
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.setField(field, value);
+      }
+      @java.lang.Override
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return super.clearField(field);
+      }
+      @java.lang.Override
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return super.clearOneof(oneof);
+      }
+      @java.lang.Override
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return super.setRepeatedField(field, index, value);
+      }
+      @java.lang.Override
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return super.addRepeatedField(field, value);
+      }
+      @java.lang.Override
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof se.lublin.humla.protobuf.Mumble.PluginDataTransmission) {
+          return mergeFrom((se.lublin.humla.protobuf.Mumble.PluginDataTransmission)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(se.lublin.humla.protobuf.Mumble.PluginDataTransmission other) {
+        if (other == se.lublin.humla.protobuf.Mumble.PluginDataTransmission.getDefaultInstance()) return this;
+        if (other.hasSenderSession()) {
+          setSenderSession(other.getSenderSession());
+        }
+        if (!other.receiverSessions_.isEmpty()) {
+          if (receiverSessions_.isEmpty()) {
+            receiverSessions_ = other.receiverSessions_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureReceiverSessionsIsMutable();
+            receiverSessions_.addAll(other.receiverSessions_);
+          }
+          onChanged();
+        }
+        if (other.hasData()) {
+          setData(other.getData());
+        }
+        if (other.hasDataID()) {
+          bitField0_ |= 0x00000008;
+          dataID_ = other.dataID_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      @java.lang.Override
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      @java.lang.Override
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        se.lublin.humla.protobuf.Mumble.PluginDataTransmission parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (se.lublin.humla.protobuf.Mumble.PluginDataTransmission) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private int senderSession_ ;
+      /**
+       * <pre>
+       * The session ID of the client this message was sent from
+       * </pre>
+       *
+       * <code>optional uint32 senderSession = 1;</code>
+       * @return Whether the senderSession field is set.
+       */
+      public boolean hasSenderSession() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <pre>
+       * The session ID of the client this message was sent from
+       * </pre>
+       *
+       * <code>optional uint32 senderSession = 1;</code>
+       * @return The senderSession.
+       */
+      public int getSenderSession() {
+        return senderSession_;
+      }
+      /**
+       * <pre>
+       * The session ID of the client this message was sent from
+       * </pre>
+       *
+       * <code>optional uint32 senderSession = 1;</code>
+       * @param value The senderSession to set.
+       * @return This builder for chaining.
+       */
+      public Builder setSenderSession(int value) {
+        bitField0_ |= 0x00000001;
+        senderSession_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * The session ID of the client this message was sent from
+       * </pre>
+       *
+       * <code>optional uint32 senderSession = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearSenderSession() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        senderSession_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.Internal.IntList receiverSessions_ = emptyIntList();
+      private void ensureReceiverSessionsIsMutable() {
+        if (!((bitField0_ & 0x00000002) != 0)) {
+          receiverSessions_ = mutableCopy(receiverSessions_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+      /**
+       * <pre>
+       * The session IDs of the clients that should receive this message
+       * </pre>
+       *
+       * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+       * @return A list containing the receiverSessions.
+       */
+      public java.util.List<java.lang.Integer>
+          getReceiverSessionsList() {
+        return ((bitField0_ & 0x00000002) != 0) ?
+                 java.util.Collections.unmodifiableList(receiverSessions_) : receiverSessions_;
+      }
+      /**
+       * <pre>
+       * The session IDs of the clients that should receive this message
+       * </pre>
+       *
+       * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+       * @return The count of receiverSessions.
+       */
+      public int getReceiverSessionsCount() {
+        return receiverSessions_.size();
+      }
+      /**
+       * <pre>
+       * The session IDs of the clients that should receive this message
+       * </pre>
+       *
+       * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+       * @param index The index of the element to return.
+       * @return The receiverSessions at the given index.
+       */
+      public int getReceiverSessions(int index) {
+        return receiverSessions_.getInt(index);
+      }
+      /**
+       * <pre>
+       * The session IDs of the clients that should receive this message
+       * </pre>
+       *
+       * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+       * @param index The index to set the value at.
+       * @param value The receiverSessions to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReceiverSessions(
+          int index, int value) {
+        ensureReceiverSessionsIsMutable();
+        receiverSessions_.setInt(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * The session IDs of the clients that should receive this message
+       * </pre>
+       *
+       * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+       * @param value The receiverSessions to add.
+       * @return This builder for chaining.
+       */
+      public Builder addReceiverSessions(int value) {
+        ensureReceiverSessionsIsMutable();
+        receiverSessions_.addInt(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * The session IDs of the clients that should receive this message
+       * </pre>
+       *
+       * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+       * @param values The receiverSessions to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllReceiverSessions(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureReceiverSessionsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, receiverSessions_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * The session IDs of the clients that should receive this message
+       * </pre>
+       *
+       * <code>repeated uint32 receiverSessions = 2 [packed = true];</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearReceiverSessions() {
+        receiverSessions_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <pre>
+       * The data that is sent
+       * </pre>
+       *
+       * <code>optional bytes data = 3;</code>
+       * @return Whether the data field is set.
+       */
+      public boolean hasData() {
+        return ((bitField0_ & 0x00000004) != 0);
+      }
+      /**
+       * <pre>
+       * The data that is sent
+       * </pre>
+       *
+       * <code>optional bytes data = 3;</code>
+       * @return The data.
+       */
+      public com.google.protobuf.ByteString getData() {
+        return data_;
+      }
+      /**
+       * <pre>
+       * The data that is sent
+       * </pre>
+       *
+       * <code>optional bytes data = 3;</code>
+       * @param value The data to set.
+       * @return This builder for chaining.
+       */
+      public Builder setData(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        data_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * The data that is sent
+       * </pre>
+       *
+       * <code>optional bytes data = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearData() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        data_ = getDefaultInstance().getData();
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object dataID_ = "";
+      /**
+       * <pre>
+       * The ID of the sent data. This will be used by plugins to check whether they will
+       * process it or not
+       * </pre>
+       *
+       * <code>optional string dataID = 4;</code>
+       * @return Whether the dataID field is set.
+       */
+      public boolean hasDataID() {
+        return ((bitField0_ & 0x00000008) != 0);
+      }
+      /**
+       * <pre>
+       * The ID of the sent data. This will be used by plugins to check whether they will
+       * process it or not
+       * </pre>
+       *
+       * <code>optional string dataID = 4;</code>
+       * @return The dataID.
+       */
+      public java.lang.String getDataID() {
+        java.lang.Object ref = dataID_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            dataID_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * The ID of the sent data. This will be used by plugins to check whether they will
+       * process it or not
+       * </pre>
+       *
+       * <code>optional string dataID = 4;</code>
+       * @return The bytes for dataID.
+       */
+      public com.google.protobuf.ByteString
+          getDataIDBytes() {
+        java.lang.Object ref = dataID_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b =
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          dataID_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * The ID of the sent data. This will be used by plugins to check whether they will
+       * process it or not
+       * </pre>
+       *
+       * <code>optional string dataID = 4;</code>
+       * @param value The dataID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setDataID(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        dataID_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * The ID of the sent data. This will be used by plugins to check whether they will
+       * process it or not
+       * </pre>
+       *
+       * <code>optional string dataID = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearDataID() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        dataID_ = getDefaultInstance().getDataID();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * The ID of the sent data. This will be used by plugins to check whether they will
+       * process it or not
+       * </pre>
+       *
+       * <code>optional string dataID = 4;</code>
+       * @param value The bytes for dataID to set.
+       * @return This builder for chaining.
+       */
+      public Builder setDataIDBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        dataID_ = value;
+        onChanged();
+        return this;
+      }
+      @java.lang.Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @java.lang.Override
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:MumbleProto.PluginDataTransmission)
+    }
+
+    // @@protoc_insertion_point(class_scope:MumbleProto.PluginDataTransmission)
+    private static final se.lublin.humla.protobuf.Mumble.PluginDataTransmission DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new se.lublin.humla.protobuf.Mumble.PluginDataTransmission();
+    }
+
+    public static se.lublin.humla.protobuf.Mumble.PluginDataTransmission getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<PluginDataTransmission>
+        PARSER = new com.google.protobuf.AbstractParser<PluginDataTransmission>() {
+      @java.lang.Override
+      public PluginDataTransmission parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new PluginDataTransmission(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<PluginDataTransmission> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<PluginDataTransmission> getParserForType() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public se.lublin.humla.protobuf.Mumble.PluginDataTransmission getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_Version_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_Version_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_UDPTunnel_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_UDPTunnel_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_Authenticate_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_Authenticate_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_Ping_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_Ping_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_Reject_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_Reject_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_ServerSync_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_ServerSync_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_ChannelRemove_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_ChannelRemove_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_ChannelState_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_ChannelState_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_UserRemove_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_UserRemove_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_UserState_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_UserState_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_MumbleProto_UserState_VolumeAdjustment_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_MumbleProto_UserState_VolumeAdjustment_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_BanList_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_BanList_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_BanList_BanEntry_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_BanList_BanEntry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_TextMessage_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_TextMessage_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_PermissionDenied_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_PermissionDenied_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_ACL_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_ACL_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_ACL_ChanGroup_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_ACL_ChanGroup_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_ACL_ChanACL_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_ACL_ChanACL_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_QueryUsers_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_QueryUsers_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_CryptSetup_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_CryptSetup_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_ContextActionModify_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_ContextActionModify_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_ContextAction_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_ContextAction_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_UserList_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_UserList_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_UserList_User_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_UserList_User_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_VoiceTarget_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_VoiceTarget_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_VoiceTarget_Target_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_VoiceTarget_Target_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_PermissionQuery_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_PermissionQuery_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_CodecVersion_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_CodecVersion_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_UserStats_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_UserStats_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_UserStats_Stats_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_UserStats_Stats_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_RequestBlob_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_RequestBlob_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_ServerConfig_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_ServerConfig_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MumbleProto_SuggestConfig_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_MumbleProto_SuggestConfig_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_MumbleProto_PluginDataTransmission_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_MumbleProto_PluginDataTransmission_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -43459,119 +47403,133 @@ public final class Mumble {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\020src/Mumble.proto\022\013MumbleProto\"K\n\007Versi" +
-      "on\022\017\n\007version\030\001 \001(\r\022\017\n\007release\030\002 \001(\t\022\n\n\002" +
-      "os\030\003 \001(\t\022\022\n\nos_version\030\004 \001(\t\"\033\n\tUDPTunne" +
-      "l\022\016\n\006packet\030\001 \002(\014\"n\n\014Authenticate\022\020\n\010use" +
-      "rname\030\001 \001(\t\022\020\n\010password\030\002 \001(\t\022\016\n\006tokens\030" +
-      "\003 \003(\t\022\025\n\rcelt_versions\030\004 \003(\005\022\023\n\004opus\030\005 \001" +
-      "(\010:\005false\"\325\001\n\004Ping\022\021\n\ttimestamp\030\001 \001(\004\022\014\n" +
-      "\004good\030\002 \001(\r\022\014\n\004late\030\003 \001(\r\022\014\n\004lost\030\004 \001(\r\022" +
-      "\016\n\006resync\030\005 \001(\r\022\023\n\013udp_packets\030\006 \001(\r\022\023\n\013" +
-      "tcp_packets\030\007 \001(\r\022\024\n\014udp_ping_avg\030\010 \001(\002\022" +
-      "\024\n\014udp_ping_var\030\t \001(\002\022\024\n\014tcp_ping_avg\030\n " +
-      "\001(\002\022\024\n\014tcp_ping_var\030\013 \001(\002\"\367\001\n\006Reject\022,\n\004" +
-      "type\030\001 \001(\0162\036.MumbleProto.Reject.RejectTy" +
-      "pe\022\016\n\006reason\030\002 \001(\t\"\256\001\n\nRejectType\022\010\n\004Non" +
-      "e\020\000\022\020\n\014WrongVersion\020\001\022\023\n\017InvalidUsername" +
-      "\020\002\022\017\n\013WrongUserPW\020\003\022\021\n\rWrongServerPW\020\004\022\021" +
-      "\n\rUsernameInUse\020\005\022\016\n\nServerFull\020\006\022\021\n\rNoC" +
-      "ertificate\020\007\022\025\n\021AuthenticatorFail\020\010\"_\n\nS" +
-      "erverSync\022\017\n\007session\030\001 \001(\r\022\025\n\rmax_bandwi" +
-      "dth\030\002 \001(\r\022\024\n\014welcome_text\030\003 \001(\t\022\023\n\013permi" +
-      "ssions\030\004 \001(\004\"#\n\rChannelRemove\022\022\n\nchannel" +
-      "_id\030\001 \002(\r\"\351\001\n\014ChannelState\022\022\n\nchannel_id" +
-      "\030\001 \001(\r\022\016\n\006parent\030\002 \001(\r\022\014\n\004name\030\003 \001(\t\022\r\n\005" +
-      "links\030\004 \003(\r\022\023\n\013description\030\005 \001(\t\022\021\n\tlink" +
-      "s_add\030\006 \003(\r\022\024\n\014links_remove\030\007 \003(\r\022\030\n\ttem" +
-      "porary\030\010 \001(\010:\005false\022\023\n\010position\030\t \001(\005:\0010" +
-      "\022\030\n\020description_hash\030\n \001(\014\022\021\n\tmax_users\030" +
-      "\013 \001(\r\"I\n\nUserRemove\022\017\n\007session\030\001 \002(\r\022\r\n\005" +
-      "actor\030\002 \001(\r\022\016\n\006reason\030\003 \001(\t\022\013\n\003ban\030\004 \001(\010" +
-      "\"\354\002\n\tUserState\022\017\n\007session\030\001 \001(\r\022\r\n\005actor" +
-      "\030\002 \001(\r\022\014\n\004name\030\003 \001(\t\022\017\n\007user_id\030\004 \001(\r\022\022\n" +
-      "\nchannel_id\030\005 \001(\r\022\014\n\004mute\030\006 \001(\010\022\014\n\004deaf\030" +
-      "\007 \001(\010\022\020\n\010suppress\030\010 \001(\010\022\021\n\tself_mute\030\t \001" +
-      "(\010\022\021\n\tself_deaf\030\n \001(\010\022\017\n\007texture\030\013 \001(\014\022\026" +
-      "\n\016plugin_context\030\014 \001(\014\022\027\n\017plugin_identit" +
-      "y\030\r \001(\t\022\017\n\007comment\030\016 \001(\t\022\014\n\004hash\030\017 \001(\t\022\024" +
-      "\n\014comment_hash\030\020 \001(\014\022\024\n\014texture_hash\030\021 \001" +
-      "(\014\022\030\n\020priority_speaker\030\022 \001(\010\022\021\n\trecordin" +
-      "g\030\023 \001(\010\"\304\001\n\007BanList\022+\n\004bans\030\001 \003(\0132\035.Mumb" +
-      "leProto.BanList.BanEntry\022\024\n\005query\030\002 \001(\010:" +
-      "\005false\032v\n\010BanEntry\022\017\n\007address\030\001 \002(\014\022\014\n\004m" +
-      "ask\030\002 \002(\r\022\014\n\004name\030\003 \001(\t\022\014\n\004hash\030\004 \001(\t\022\016\n" +
-      "\006reason\030\005 \001(\t\022\r\n\005start\030\006 \001(\t\022\020\n\010duration" +
-      "\030\007 \001(\r\"c\n\013TextMessage\022\r\n\005actor\030\001 \001(\r\022\017\n\007" +
-      "session\030\002 \003(\r\022\022\n\nchannel_id\030\003 \003(\r\022\017\n\007tre" +
-      "e_id\030\004 \003(\r\022\017\n\007message\030\005 \002(\t\"\366\002\n\020Permissi" +
-      "onDenied\022\022\n\npermission\030\001 \001(\r\022\022\n\nchannel_" +
-      "id\030\002 \001(\r\022\017\n\007session\030\003 \001(\r\022\016\n\006reason\030\004 \001(" +
-      "\t\0224\n\004type\030\005 \001(\0162&.MumbleProto.Permission" +
-      "Denied.DenyType\022\014\n\004name\030\006 \001(\t\"\324\001\n\010DenyTy" +
-      "pe\022\010\n\004Text\020\000\022\016\n\nPermission\020\001\022\r\n\tSuperUse" +
-      "r\020\002\022\017\n\013ChannelName\020\003\022\017\n\013TextTooLong\020\004\022\007\n" +
-      "\003H9K\020\005\022\024\n\020TemporaryChannel\020\006\022\026\n\022MissingC" +
-      "ertificate\020\007\022\014\n\010UserName\020\010\022\017\n\013ChannelFul" +
-      "l\020\t\022\020\n\014NestingLimit\020\n\022\025\n\021ChannelCountLim" +
-      "it\020\013\"\324\003\n\003ACL\022\022\n\nchannel_id\030\001 \002(\r\022\032\n\014inhe" +
-      "rit_acls\030\002 \001(\010:\004true\022*\n\006groups\030\003 \003(\0132\032.M" +
-      "umbleProto.ACL.ChanGroup\022&\n\004acls\030\004 \003(\0132\030" +
-      ".MumbleProto.ACL.ChanACL\022\024\n\005query\030\005 \001(\010:" +
-      "\005false\032\234\001\n\tChanGroup\022\014\n\004name\030\001 \002(\t\022\027\n\tin" +
-      "herited\030\002 \001(\010:\004true\022\025\n\007inherit\030\003 \001(\010:\004tr" +
-      "ue\022\031\n\013inheritable\030\004 \001(\010:\004true\022\013\n\003add\030\005 \003" +
-      "(\r\022\016\n\006remove\030\006 \003(\r\022\031\n\021inherited_members\030" +
-      "\007 \003(\r\032\223\001\n\007ChanACL\022\030\n\napply_here\030\001 \001(\010:\004t" +
-      "rue\022\030\n\napply_subs\030\002 \001(\010:\004true\022\027\n\tinherit" +
-      "ed\030\003 \001(\010:\004true\022\017\n\007user_id\030\004 \001(\r\022\r\n\005group" +
-      "\030\005 \001(\t\022\r\n\005grant\030\006 \001(\r\022\014\n\004deny\030\007 \001(\r\"(\n\nQ" +
-      "ueryUsers\022\013\n\003ids\030\001 \003(\r\022\r\n\005names\030\002 \003(\t\"E\n" +
-      "\nCryptSetup\022\013\n\003key\030\001 \001(\014\022\024\n\014client_nonce" +
-      "\030\002 \001(\014\022\024\n\014server_nonce\030\003 \001(\014\"\323\001\n\023Context" +
-      "ActionModify\022\016\n\006action\030\001 \002(\t\022\014\n\004text\030\002 \001" +
-      "(\t\022\017\n\007context\030\003 \001(\r\022=\n\toperation\030\004 \001(\0162*" +
-      ".MumbleProto.ContextActionModify.Operati" +
-      "on\",\n\007Context\022\n\n\006Server\020\001\022\013\n\007Channel\020\002\022\010" +
-      "\n\004User\020\004\" \n\tOperation\022\007\n\003Add\020\000\022\n\n\006Remove" +
-      "\020\001\"D\n\rContextAction\022\017\n\007session\030\001 \001(\r\022\022\n\n" +
-      "channel_id\030\002 \001(\r\022\016\n\006action\030\003 \002(\t\"\205\001\n\010Use" +
-      "rList\022)\n\005users\030\001 \003(\0132\032.MumbleProto.UserL" +
-      "ist.User\032N\n\004User\022\017\n\007user_id\030\001 \002(\r\022\014\n\004nam" +
-      "e\030\002 \001(\t\022\021\n\tlast_seen\030\003 \001(\t\022\024\n\014last_chann" +
-      "el\030\004 \001(\r\"\270\001\n\013VoiceTarget\022\n\n\002id\030\001 \001(\r\0220\n\007" +
-      "targets\030\002 \003(\0132\037.MumbleProto.VoiceTarget." +
-      "Target\032k\n\006Target\022\017\n\007session\030\001 \003(\r\022\022\n\ncha" +
-      "nnel_id\030\002 \001(\r\022\r\n\005group\030\003 \001(\t\022\024\n\005links\030\004 " +
-      "\001(\010:\005false\022\027\n\010children\030\005 \001(\010:\005false\"P\n\017P" +
-      "ermissionQuery\022\022\n\nchannel_id\030\001 \001(\r\022\023\n\013pe" +
-      "rmissions\030\002 \001(\r\022\024\n\005flush\030\003 \001(\010:\005false\"\\\n" +
-      "\014CodecVersion\022\r\n\005alpha\030\001 \002(\005\022\014\n\004beta\030\002 \002" +
-      "(\005\022\032\n\014prefer_alpha\030\003 \002(\010:\004true\022\023\n\004opus\030\004" +
-      " \001(\010:\005false\"\270\004\n\tUserStats\022\017\n\007session\030\001 \001" +
-      "(\r\022\031\n\nstats_only\030\002 \001(\010:\005false\022\024\n\014certifi" +
-      "cates\030\003 \003(\014\0221\n\013from_client\030\004 \001(\0132\034.Mumbl" +
-      "eProto.UserStats.Stats\0221\n\013from_server\030\005 " +
-      "\001(\0132\034.MumbleProto.UserStats.Stats\022\023\n\013udp" +
-      "_packets\030\006 \001(\r\022\023\n\013tcp_packets\030\007 \001(\r\022\024\n\014u" +
-      "dp_ping_avg\030\010 \001(\002\022\024\n\014udp_ping_var\030\t \001(\002\022" +
-      "\024\n\014tcp_ping_avg\030\n \001(\002\022\024\n\014tcp_ping_var\030\013 " +
-      "\001(\002\022%\n\007version\030\014 \001(\0132\024.MumbleProto.Versi" +
-      "on\022\025\n\rcelt_versions\030\r \003(\005\022\017\n\007address\030\016 \001" +
-      "(\014\022\021\n\tbandwidth\030\017 \001(\r\022\022\n\nonlinesecs\030\020 \001(" +
-      "\r\022\020\n\010idlesecs\030\021 \001(\r\022!\n\022strong_certificat" +
-      "e\030\022 \001(\010:\005false\022\023\n\004opus\030\023 \001(\010:\005false\032A\n\005S" +
-      "tats\022\014\n\004good\030\001 \001(\r\022\014\n\004late\030\002 \001(\r\022\014\n\004lost" +
-      "\030\003 \001(\r\022\016\n\006resync\030\004 \001(\r\"\\\n\013RequestBlob\022\027\n" +
-      "\017session_texture\030\001 \003(\r\022\027\n\017session_commen" +
-      "t\030\002 \003(\r\022\033\n\023channel_description\030\003 \003(\r\"\230\001\n" +
-      "\014ServerConfig\022\025\n\rmax_bandwidth\030\001 \001(\r\022\024\n\014" +
-      "welcome_text\030\002 \001(\t\022\022\n\nallow_html\030\003 \001(\010\022\026" +
-      "\n\016message_length\030\004 \001(\r\022\034\n\024image_message_" +
-      "length\030\005 \001(\r\022\021\n\tmax_users\030\006 \001(\r\"J\n\rSugge" +
-      "stConfig\022\017\n\007version\030\001 \001(\r\022\022\n\npositional\030" +
-      "\002 \001(\010\022\024\n\014push_to_talk\030\003 \001(\010B&\n\030se.lublin" +
-      ".humla.protobufB\006MumbleH\001P\000"
+      "\n\020src/Mumble.proto\022\013MumbleProto\"b\n\007Versi" +
+      "on\022\022\n\nversion_v1\030\001 \001(\r\022\022\n\nversion_v2\030\005 \001" +
+      "(\004\022\017\n\007release\030\002 \001(\t\022\n\n\002os\030\003 \001(\t\022\022\n\nos_ve" +
+      "rsion\030\004 \001(\t\"\033\n\tUDPTunnel\022\016\n\006packet\030\001 \002(\014" +
+      "\"\206\001\n\014Authenticate\022\020\n\010username\030\001 \001(\t\022\020\n\010p" +
+      "assword\030\002 \001(\t\022\016\n\006tokens\030\003 \003(\t\022\025\n\rcelt_ve" +
+      "rsions\030\004 \003(\005\022\023\n\004opus\030\005 \001(\010:\005false\022\026\n\013cli" +
+      "ent_type\030\006 \001(\005:\0010\"\325\001\n\004Ping\022\021\n\ttimestamp\030" +
+      "\001 \001(\004\022\014\n\004good\030\002 \001(\r\022\014\n\004late\030\003 \001(\r\022\014\n\004los" +
+      "t\030\004 \001(\r\022\016\n\006resync\030\005 \001(\r\022\023\n\013udp_packets\030\006" +
+      " \001(\r\022\023\n\013tcp_packets\030\007 \001(\r\022\024\n\014udp_ping_av" +
+      "g\030\010 \001(\002\022\024\n\014udp_ping_var\030\t \001(\002\022\024\n\014tcp_pin" +
+      "g_avg\030\n \001(\002\022\024\n\014tcp_ping_var\030\013 \001(\002\"\367\001\n\006Re" +
+      "ject\022,\n\004type\030\001 \001(\0162\036.MumbleProto.Reject." +
+      "RejectType\022\016\n\006reason\030\002 \001(\t\"\256\001\n\nRejectTyp" +
+      "e\022\010\n\004None\020\000\022\020\n\014WrongVersion\020\001\022\023\n\017Invalid" +
+      "Username\020\002\022\017\n\013WrongUserPW\020\003\022\021\n\rWrongServ" +
+      "erPW\020\004\022\021\n\rUsernameInUse\020\005\022\016\n\nServerFull\020" +
+      "\006\022\021\n\rNoCertificate\020\007\022\025\n\021AuthenticatorFai" +
+      "l\020\010\"_\n\nServerSync\022\017\n\007session\030\001 \001(\r\022\025\n\rma" +
+      "x_bandwidth\030\002 \001(\r\022\024\n\014welcome_text\030\003 \001(\t\022" +
+      "\023\n\013permissions\030\004 \001(\004\"#\n\rChannelRemove\022\022\n" +
+      "\nchannel_id\030\001 \002(\r\"\231\002\n\014ChannelState\022\022\n\nch" +
+      "annel_id\030\001 \001(\r\022\016\n\006parent\030\002 \001(\r\022\014\n\004name\030\003" +
+      " \001(\t\022\r\n\005links\030\004 \003(\r\022\023\n\013description\030\005 \001(\t" +
+      "\022\021\n\tlinks_add\030\006 \003(\r\022\024\n\014links_remove\030\007 \003(" +
+      "\r\022\030\n\ttemporary\030\010 \001(\010:\005false\022\023\n\010position\030" +
+      "\t \001(\005:\0010\022\030\n\020description_hash\030\n \001(\014\022\021\n\tma" +
+      "x_users\030\013 \001(\r\022\033\n\023is_enter_restricted\030\014 \001" +
+      "(\010\022\021\n\tcan_enter\030\r \001(\010\"I\n\nUserRemove\022\017\n\007s" +
+      "ession\030\001 \002(\r\022\r\n\005actor\030\002 \001(\r\022\016\n\006reason\030\003 " +
+      "\001(\t\022\013\n\003ban\030\004 \001(\010\"\346\004\n\tUserState\022\017\n\007sessio" +
+      "n\030\001 \001(\r\022\r\n\005actor\030\002 \001(\r\022\014\n\004name\030\003 \001(\t\022\017\n\007" +
+      "user_id\030\004 \001(\r\022\022\n\nchannel_id\030\005 \001(\r\022\014\n\004mut" +
+      "e\030\006 \001(\010\022\014\n\004deaf\030\007 \001(\010\022\020\n\010suppress\030\010 \001(\010\022" +
+      "\021\n\tself_mute\030\t \001(\010\022\021\n\tself_deaf\030\n \001(\010\022\017\n" +
+      "\007texture\030\013 \001(\014\022\026\n\016plugin_context\030\014 \001(\014\022\027" +
+      "\n\017plugin_identity\030\r \001(\t\022\017\n\007comment\030\016 \001(\t" +
+      "\022\014\n\004hash\030\017 \001(\t\022\024\n\014comment_hash\030\020 \001(\014\022\024\n\014" +
+      "texture_hash\030\021 \001(\014\022\030\n\020priority_speaker\030\022" +
+      " \001(\010\022\021\n\trecording\030\023 \001(\010\022\037\n\027temporary_acc" +
+      "ess_tokens\030\024 \003(\t\022\035\n\025listening_channel_ad" +
+      "d\030\025 \003(\r\022 \n\030listening_channel_remove\030\026 \003(" +
+      "\r\022L\n\033listening_volume_adjustment\030\027 \003(\0132\'" +
+      ".MumbleProto.UserState.VolumeAdjustment\032" +
+      "H\n\020VolumeAdjustment\022\031\n\021listening_channel" +
+      "\030\001 \001(\r\022\031\n\021volume_adjustment\030\002 \001(\002\"\304\001\n\007Ba" +
+      "nList\022+\n\004bans\030\001 \003(\0132\035.MumbleProto.BanLis" +
+      "t.BanEntry\022\024\n\005query\030\002 \001(\010:\005false\032v\n\010BanE" +
+      "ntry\022\017\n\007address\030\001 \002(\014\022\014\n\004mask\030\002 \002(\r\022\014\n\004n" +
+      "ame\030\003 \001(\t\022\014\n\004hash\030\004 \001(\t\022\016\n\006reason\030\005 \001(\t\022" +
+      "\r\n\005start\030\006 \001(\t\022\020\n\010duration\030\007 \001(\r\"c\n\013Text" +
+      "Message\022\r\n\005actor\030\001 \001(\r\022\017\n\007session\030\002 \003(\r\022" +
+      "\022\n\nchannel_id\030\003 \003(\r\022\017\n\007tree_id\030\004 \003(\r\022\017\n\007" +
+      "message\030\005 \002(\t\"\247\003\n\020PermissionDenied\022\022\n\npe" +
+      "rmission\030\001 \001(\r\022\022\n\nchannel_id\030\002 \001(\r\022\017\n\007se" +
+      "ssion\030\003 \001(\r\022\016\n\006reason\030\004 \001(\t\0224\n\004type\030\005 \001(" +
+      "\0162&.MumbleProto.PermissionDenied.DenyTyp" +
+      "e\022\014\n\004name\030\006 \001(\t\"\205\002\n\010DenyType\022\010\n\004Text\020\000\022\016" +
+      "\n\nPermission\020\001\022\r\n\tSuperUser\020\002\022\017\n\013Channel" +
+      "Name\020\003\022\017\n\013TextTooLong\020\004\022\007\n\003H9K\020\005\022\024\n\020Temp" +
+      "oraryChannel\020\006\022\026\n\022MissingCertificate\020\007\022\014" +
+      "\n\010UserName\020\010\022\017\n\013ChannelFull\020\t\022\020\n\014Nesting" +
+      "Limit\020\n\022\025\n\021ChannelCountLimit\020\013\022\030\n\024Channe" +
+      "lListenerLimit\020\014\022\025\n\021UserListenerLimit\020\r\"" +
+      "\324\003\n\003ACL\022\022\n\nchannel_id\030\001 \002(\r\022\032\n\014inherit_a" +
+      "cls\030\002 \001(\010:\004true\022*\n\006groups\030\003 \003(\0132\032.Mumble" +
+      "Proto.ACL.ChanGroup\022&\n\004acls\030\004 \003(\0132\030.Mumb" +
+      "leProto.ACL.ChanACL\022\024\n\005query\030\005 \001(\010:\005fals" +
+      "e\032\234\001\n\tChanGroup\022\014\n\004name\030\001 \002(\t\022\027\n\tinherit" +
+      "ed\030\002 \001(\010:\004true\022\025\n\007inherit\030\003 \001(\010:\004true\022\031\n" +
+      "\013inheritable\030\004 \001(\010:\004true\022\013\n\003add\030\005 \003(\r\022\016\n" +
+      "\006remove\030\006 \003(\r\022\031\n\021inherited_members\030\007 \003(\r" +
+      "\032\223\001\n\007ChanACL\022\030\n\napply_here\030\001 \001(\010:\004true\022\030" +
+      "\n\napply_subs\030\002 \001(\010:\004true\022\027\n\tinherited\030\003 " +
+      "\001(\010:\004true\022\017\n\007user_id\030\004 \001(\r\022\r\n\005group\030\005 \001(" +
+      "\t\022\r\n\005grant\030\006 \001(\r\022\014\n\004deny\030\007 \001(\r\"(\n\nQueryU" +
+      "sers\022\013\n\003ids\030\001 \003(\r\022\r\n\005names\030\002 \003(\t\"E\n\nCryp" +
+      "tSetup\022\013\n\003key\030\001 \001(\014\022\024\n\014client_nonce\030\002 \001(" +
+      "\014\022\024\n\014server_nonce\030\003 \001(\014\"\323\001\n\023ContextActio" +
+      "nModify\022\016\n\006action\030\001 \002(\t\022\014\n\004text\030\002 \001(\t\022\017\n" +
+      "\007context\030\003 \001(\r\022=\n\toperation\030\004 \001(\0162*.Mumb" +
+      "leProto.ContextActionModify.Operation\",\n" +
+      "\007Context\022\n\n\006Server\020\001\022\013\n\007Channel\020\002\022\010\n\004Use" +
+      "r\020\004\" \n\tOperation\022\007\n\003Add\020\000\022\n\n\006Remove\020\001\"D\n" +
+      "\rContextAction\022\017\n\007session\030\001 \001(\r\022\022\n\nchann" +
+      "el_id\030\002 \001(\r\022\016\n\006action\030\003 \002(\t\"\205\001\n\010UserList" +
+      "\022)\n\005users\030\001 \003(\0132\032.MumbleProto.UserList.U" +
+      "ser\032N\n\004User\022\017\n\007user_id\030\001 \002(\r\022\014\n\004name\030\002 \001" +
+      "(\t\022\021\n\tlast_seen\030\003 \001(\t\022\024\n\014last_channel\030\004 " +
+      "\001(\r\"\270\001\n\013VoiceTarget\022\n\n\002id\030\001 \001(\r\0220\n\007targe" +
+      "ts\030\002 \003(\0132\037.MumbleProto.VoiceTarget.Targe" +
+      "t\032k\n\006Target\022\017\n\007session\030\001 \003(\r\022\022\n\nchannel_" +
+      "id\030\002 \001(\r\022\r\n\005group\030\003 \001(\t\022\024\n\005links\030\004 \001(\010:\005" +
+      "false\022\027\n\010children\030\005 \001(\010:\005false\"P\n\017Permis" +
+      "sionQuery\022\022\n\nchannel_id\030\001 \001(\r\022\023\n\013permiss" +
+      "ions\030\002 \001(\r\022\024\n\005flush\030\003 \001(\010:\005false\"\\\n\014Code" +
+      "cVersion\022\r\n\005alpha\030\001 \002(\005\022\014\n\004beta\030\002 \002(\005\022\032\n" +
+      "\014prefer_alpha\030\003 \002(\010:\004true\022\023\n\004opus\030\004 \001(\010:" +
+      "\005false\"\270\004\n\tUserStats\022\017\n\007session\030\001 \001(\r\022\031\n" +
+      "\nstats_only\030\002 \001(\010:\005false\022\024\n\014certificates" +
+      "\030\003 \003(\014\0221\n\013from_client\030\004 \001(\0132\034.MumbleProt" +
+      "o.UserStats.Stats\0221\n\013from_server\030\005 \001(\0132\034" +
+      ".MumbleProto.UserStats.Stats\022\023\n\013udp_pack" +
+      "ets\030\006 \001(\r\022\023\n\013tcp_packets\030\007 \001(\r\022\024\n\014udp_pi" +
+      "ng_avg\030\010 \001(\002\022\024\n\014udp_ping_var\030\t \001(\002\022\024\n\014tc" +
+      "p_ping_avg\030\n \001(\002\022\024\n\014tcp_ping_var\030\013 \001(\002\022%" +
+      "\n\007version\030\014 \001(\0132\024.MumbleProto.Version\022\025\n" +
+      "\rcelt_versions\030\r \003(\005\022\017\n\007address\030\016 \001(\014\022\021\n" +
+      "\tbandwidth\030\017 \001(\r\022\022\n\nonlinesecs\030\020 \001(\r\022\020\n\010" +
+      "idlesecs\030\021 \001(\r\022!\n\022strong_certificate\030\022 \001" +
+      "(\010:\005false\022\023\n\004opus\030\023 \001(\010:\005false\032A\n\005Stats\022" +
+      "\014\n\004good\030\001 \001(\r\022\014\n\004late\030\002 \001(\r\022\014\n\004lost\030\003 \001(" +
+      "\r\022\016\n\006resync\030\004 \001(\r\"\\\n\013RequestBlob\022\027\n\017sess" +
+      "ion_texture\030\001 \003(\r\022\027\n\017session_comment\030\002 \003" +
+      "(\r\022\033\n\023channel_description\030\003 \003(\r\"\263\001\n\014Serv" +
+      "erConfig\022\025\n\rmax_bandwidth\030\001 \001(\r\022\024\n\014welco" +
+      "me_text\030\002 \001(\t\022\022\n\nallow_html\030\003 \001(\010\022\026\n\016mes" +
+      "sage_length\030\004 \001(\r\022\034\n\024image_message_lengt" +
+      "h\030\005 \001(\r\022\021\n\tmax_users\030\006 \001(\r\022\031\n\021recording_" +
+      "allowed\030\007 \001(\010\"a\n\rSuggestConfig\022\022\n\nversio" +
+      "n_v1\030\001 \001(\r\022\022\n\nversion_v2\030\004 \001(\004\022\022\n\npositi" +
+      "onal\030\002 \001(\010\022\024\n\014push_to_talk\030\003 \001(\010\"k\n\026Plug" +
+      "inDataTransmission\022\025\n\rsenderSession\030\001 \001(" +
+      "\r\022\034\n\020receiverSessions\030\002 \003(\rB\002\020\001\022\014\n\004data\030" +
+      "\003 \001(\014\022\016\n\006dataID\030\004 \001(\tB&\n\030se.lublin.humla" +
+      ".protobufB\006MumbleH\001P\000"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -43582,7 +47540,7 @@ public final class Mumble {
     internal_static_MumbleProto_Version_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_MumbleProto_Version_descriptor,
-        new java.lang.String[] { "Version", "Release", "Os", "OsVersion", });
+        new java.lang.String[] { "VersionV1", "VersionV2", "Release", "Os", "OsVersion", });
     internal_static_MumbleProto_UDPTunnel_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_MumbleProto_UDPTunnel_fieldAccessorTable = new
@@ -43594,7 +47552,7 @@ public final class Mumble {
     internal_static_MumbleProto_Authenticate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_MumbleProto_Authenticate_descriptor,
-        new java.lang.String[] { "Username", "Password", "Tokens", "CeltVersions", "Opus", });
+        new java.lang.String[] { "Username", "Password", "Tokens", "CeltVersions", "Opus", "ClientType", });
     internal_static_MumbleProto_Ping_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_MumbleProto_Ping_fieldAccessorTable = new
@@ -43624,7 +47582,7 @@ public final class Mumble {
     internal_static_MumbleProto_ChannelState_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_MumbleProto_ChannelState_descriptor,
-        new java.lang.String[] { "ChannelId", "Parent", "Name", "Links", "Description", "LinksAdd", "LinksRemove", "Temporary", "Position", "DescriptionHash", "MaxUsers", });
+        new java.lang.String[] { "ChannelId", "Parent", "Name", "Links", "Description", "LinksAdd", "LinksRemove", "Temporary", "Position", "DescriptionHash", "MaxUsers", "IsEnterRestricted", "CanEnter", });
     internal_static_MumbleProto_UserRemove_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_MumbleProto_UserRemove_fieldAccessorTable = new
@@ -43636,7 +47594,13 @@ public final class Mumble {
     internal_static_MumbleProto_UserState_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_MumbleProto_UserState_descriptor,
-        new java.lang.String[] { "Session", "Actor", "Name", "UserId", "ChannelId", "Mute", "Deaf", "Suppress", "SelfMute", "SelfDeaf", "Texture", "PluginContext", "PluginIdentity", "Comment", "Hash", "CommentHash", "TextureHash", "PrioritySpeaker", "Recording", });
+        new java.lang.String[] { "Session", "Actor", "Name", "UserId", "ChannelId", "Mute", "Deaf", "Suppress", "SelfMute", "SelfDeaf", "Texture", "PluginContext", "PluginIdentity", "Comment", "Hash", "CommentHash", "TextureHash", "PrioritySpeaker", "Recording", "TemporaryAccessTokens", "ListeningChannelAdd", "ListeningChannelRemove", "ListeningVolumeAdjustment", });
+    internal_static_MumbleProto_UserState_VolumeAdjustment_descriptor =
+      internal_static_MumbleProto_UserState_descriptor.getNestedTypes().get(0);
+    internal_static_MumbleProto_UserState_VolumeAdjustment_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_MumbleProto_UserState_VolumeAdjustment_descriptor,
+        new java.lang.String[] { "ListeningChannel", "VolumeAdjustment", });
     internal_static_MumbleProto_BanList_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_MumbleProto_BanList_fieldAccessorTable = new
@@ -43762,13 +47726,19 @@ public final class Mumble {
     internal_static_MumbleProto_ServerConfig_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_MumbleProto_ServerConfig_descriptor,
-        new java.lang.String[] { "MaxBandwidth", "WelcomeText", "AllowHtml", "MessageLength", "ImageMessageLength", "MaxUsers", });
+        new java.lang.String[] { "MaxBandwidth", "WelcomeText", "AllowHtml", "MessageLength", "ImageMessageLength", "MaxUsers", "RecordingAllowed", });
     internal_static_MumbleProto_SuggestConfig_descriptor =
       getDescriptor().getMessageTypes().get(25);
     internal_static_MumbleProto_SuggestConfig_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_MumbleProto_SuggestConfig_descriptor,
-        new java.lang.String[] { "Version", "Positional", "PushToTalk", });
+        new java.lang.String[] { "VersionV1", "VersionV2", "Positional", "PushToTalk", });
+    internal_static_MumbleProto_PluginDataTransmission_descriptor =
+      getDescriptor().getMessageTypes().get(26);
+    internal_static_MumbleProto_PluginDataTransmission_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_MumbleProto_PluginDataTransmission_descriptor,
+        new java.lang.String[] { "SenderSession", "ReceiverSessions", "Data", "DataID", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -18,7 +18,7 @@
 package se.lublin.humla.net;
 
 /**
- * Message types pulled from the Mumble project's 'Message.h' for protocol version 1.2.4.
+ * Message types pulled from the Mumble project's protocol message list.
  */
 public enum HumlaTCPMessageType {
     Version,
@@ -46,5 +46,6 @@ public enum HumlaTCPMessageType {
     UserStats,
     RequestBlob,
     ServerConfig,
-    SuggestConfig
+    SuggestConfig,
+    PluginDataTransmission
 }

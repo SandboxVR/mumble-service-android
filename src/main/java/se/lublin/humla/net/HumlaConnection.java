@@ -51,6 +51,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import se.lublin.humla.Constants;
 import se.lublin.humla.exception.NotConnectedException;
 import se.lublin.humla.exception.NotSynchronizedException;
 import se.lublin.humla.protobuf.Mumble;
@@ -111,6 +112,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
     private String mHost;
     private int mPort;
     private int mServerVersion;
+    private long mServerVersionV2;
     private String mServerRelease;
     private String mServerOSName;
     private String mServerOSVersion;
@@ -211,7 +213,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
         @Override
         public void messageVersion(Mumble.Version msg) {
-            mServerVersion = msg.getVersion();
+            mServerVersion = msg.getVersionV1();
+            mServerVersionV2 = msg.getVersionV2();
             mServerRelease = msg.getRelease();
             mServerOSName = msg.getOs();
             mServerOSVersion = msg.getOsVersion();
@@ -272,11 +275,16 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
             long t = getElapsed();
 
             if (!shouldForceTCP()) {
-                ByteBuffer buffer = ByteBuffer.allocate(16);
-                buffer.put((byte) ((HumlaUDPMessageType.UDPPing.ordinal() << 5) & 0xFF));
-                buffer.putLong(t);
+                if (usesProtobufUDP()) {
+                    byte[] ping = MumbleUDPProtocol.encodePing(t);
+                    sendUDPMessage(ping, ping.length, true);
+                } else {
+                    ByteBuffer buffer = ByteBuffer.allocate(16);
+                    buffer.put((byte) ((HumlaUDPMessageType.UDPPing.ordinal() << 5) & 0xFF));
+                    buffer.putLong(t);
 
-                sendUDPMessage(buffer.array(), 16, true);
+                    sendUDPMessage(buffer.array(), 16, true);
+                }
 //                Log.v(TAG, "OUT: UDP Ping");
             }
 
@@ -577,11 +585,23 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
             throw new IllegalArgumentException("Requested length " + length + " is longer than " +
                     "available data length " + data.length + "!");
         }
-        if (mServerVersion == 0x10202) applyLegacyCodecWorkaround(data);
+        byte[] packetData = data;
+        int packetLength = length;
+        if (usesProtobufUDP() && !force) {
+            byte[] protobufPacket = MumbleUDPProtocol.encodeAudioFromLegacy(data, length);
+            if (protobufPacket == null) {
+                Log.w(TAG, "Unable to encode legacy UDP audio as Mumble 1.5 protobuf audio.");
+                return;
+            }
+            packetData = protobufPacket;
+            packetLength = protobufPacket.length;
+        } else if (mServerVersion == 0x10202) {
+            applyLegacyCodecWorkaround(data);
+        }
         if (!force && (shouldForceTCP() || !mUsingUDP))
-            mTCP.sendMessage(data, length, HumlaTCPMessageType.UDPTunnel);
+            mTCP.sendMessage(packetData, packetLength, HumlaTCPMessageType.UDPTunnel);
         else if (!shouldForceTCP())
-            mUDP.sendMessage(data, length);
+            mUDP.sendMessage(packetData, packetLength);
     }
 
     /**
@@ -612,6 +632,9 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
         if(type == HumlaTCPMessageType.UDPTunnel) {
             onUDPDataReceived(data);
+            return;
+        }
+        if(type == HumlaTCPMessageType.PluginDataTransmission) {
             return;
         }
 
@@ -660,6 +683,29 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
     @Override
     public void onUDPDataReceived(byte[] data) {
+        if (usesProtobufUDP() && data.length > 0) {
+            try {
+                if (data[0] == MumbleUDPProtocol.MESSAGE_PING) {
+                    byte[] legacyPing = MumbleUDPProtocol.decodePingToLegacy(data);
+                    for(HumlaUDPMessageListener handler : mUDPHandlers) {
+                        handler.messageUDPPing(legacyPing);
+                    }
+                    return;
+                } else if (data[0] == MumbleUDPProtocol.MESSAGE_AUDIO) {
+                    byte[] legacyAudio = MumbleUDPProtocol.decodeAudioToLegacy(data);
+                    if (legacyAudio != null) {
+                        for(HumlaUDPMessageListener handler : mUDPHandlers) {
+                            handler.messageVoiceData(legacyAudio, HumlaUDPMessageType.UDPVoiceOpus);
+                        }
+                    }
+                    return;
+                }
+            } catch (InvalidProtocolBufferException e) {
+                Log.w(TAG, "Failed to decode protobuf UDP packet", e);
+                return;
+            }
+        }
+
         if(mServerVersion == 0x10202) applyLegacyCodecWorkaround(data);
         int dataType = data[0] >> 5 & 0x7;
         if(dataType < 0 || dataType > HumlaUDPMessageType.values().length - 1) return; // Discard invalid data types
@@ -758,6 +804,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
                 return Mumble.RequestBlob.parseFrom(data);
             case SuggestConfig:
                 return Mumble.SuggestConfig.parseFrom(data);
+            case PluginDataTransmission:
+                return Mumble.PluginDataTransmission.parseFrom(data);
             default:
                 throw new InvalidProtocolBufferException("Unknown TCP data passed.");
         }
@@ -854,7 +902,14 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
             case VoiceTarget:
                 handler.messageVoiceTarget((Mumble.VoiceTarget) msg);
                 break;
+            case PluginDataTransmission:
+                break;
         }
+    }
+
+    private boolean usesProtobufUDP() {
+        return mServerVersion >= Constants.PROTOBUF_UDP_VERSION
+                || mServerVersionV2 >= ((long) 1 << 48) + ((long) 5 << 32);
     }
 
     /**
