@@ -28,8 +28,8 @@ import se.lublin.humla.audio.encoder.CELT11Encoder;
 import se.lublin.humla.audio.encoder.CELT7Encoder;
 import se.lublin.humla.audio.encoder.IEncoder;
 import se.lublin.humla.audio.encoder.OpusEncoder;
-import se.lublin.humla.audio.encoder.PreprocessingEncoder;
 import se.lublin.humla.audio.encoder.ResamplingEncoder;
+import se.lublin.humla.audio.encoder.RnNoiseEncoder;
 import se.lublin.humla.audio.inputmode.IInputMode;
 import se.lublin.humla.exception.AudioException;
 import se.lublin.humla.exception.AudioInitializationException;
@@ -231,7 +231,7 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
         }
 
         if (mPreprocessorEnabled) {
-            encoder = new PreprocessingEncoder(encoder, FRAME_SIZE, SAMPLE_RATE);
+            encoder = new RnNoiseEncoder(encoder, FRAME_SIZE);
         }
 
         if (mInput.getSampleRate() != SAMPLE_RATE) {

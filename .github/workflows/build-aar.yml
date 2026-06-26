@@ -146,6 +146,7 @@ jobs:
           test -f src/main/libs/arm64-v8a/libjnicelt7.so
           test -f src/main/libs/arm64-v8a/libjniopus.so
           test -f src/main/libs/arm64-v8a/libjnispeex.so
+          test -f src/main/libs/arm64-v8a/libjnirnnoise.so
 
           ./gradlew --no-daemon assembleRelease
 
@@ -170,6 +171,7 @@ jobs:
           require_aar_entry 'jni/arm64-v8a/libjnicelt7.so'
           require_aar_entry 'jni/arm64-v8a/libjniopus.so'
           require_aar_entry 'jni/arm64-v8a/libjnispeex.so'
+          require_aar_entry 'jni/arm64-v8a/libjnirnnoise.so'
           require_aar_entry 'libs/prov-1.51.0.0.jar'
           require_aar_entry 'libs/pkix-1.51.0.0.jar'
 

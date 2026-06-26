@@ -64,7 +64,6 @@ extern "C" {
 #include <speex/speex_types.h>
 #include <speex/speex_bits.h>
 #include <speex/speex_jitter.h>
-#include <speex/speex_preprocess.h>
 #include <speex/speex_resampler.h>
 }
 
@@ -1544,120 +1543,6 @@ JNIEXPORT jint JNICALL Java_se_lublin_humla_audio_javacpp_Speex_jitter_1buffer_1
     jthrowable exc = NULL;
     try {
         int rvalue = jitter_buffer_update_delay((JitterBuffer*)ptr0, ptr1, ptr2);
-        rarg = (jint)rvalue;
-    } catch (...) {
-        exc = JavaCPP_handleException(env, 15);
-    }
-
-    if (exc != NULL) {
-        env->Throw(exc);
-    }
-    return rarg;
-}
-JNIEXPORT jobject JNICALL Java_se_lublin_humla_audio_javacpp_Speex_speex_1preprocess_1state_1init(JNIEnv* env, jclass cls, jint arg0, jint arg1) {
-    jobject rarg = NULL;
-    void* rptr;
-    jthrowable exc = NULL;
-    try {
-        rptr = speex_preprocess_state_init(arg0, arg1);
-        if (rptr != NULL) {
-            rarg = env->AllocObject(JavaCPP_getClass(env, 1));
-            env->SetLongField(rarg, JavaCPP_addressFID, ptr_to_jlong(rptr));
-        }
-    } catch (...) {
-        exc = JavaCPP_handleException(env, 15);
-    }
-
-    if (exc != NULL) {
-        env->Throw(exc);
-    }
-    return rarg;
-}
-JNIEXPORT void JNICALL Java_se_lublin_humla_audio_javacpp_Speex_speex_1preprocess_1state_1destroy(JNIEnv* env, jclass cls, jobject arg0) {
-    char* ptr0 = arg0 == NULL ? NULL : (char*)jlong_to_ptr(env->GetLongField(arg0, JavaCPP_addressFID));
-    jint position0 = arg0 == NULL ? 0 : env->GetIntField(arg0, JavaCPP_positionFID);
-    ptr0 += position0;
-    jthrowable exc = NULL;
-    try {
-        speex_preprocess_state_destroy((SpeexPreprocessState*)ptr0);
-    } catch (...) {
-        exc = JavaCPP_handleException(env, 15);
-    }
-
-    if (exc != NULL) {
-        env->Throw(exc);
-    }
-}
-JNIEXPORT jint JNICALL Java_se_lublin_humla_audio_javacpp_Speex_speex_1preprocess_1run(JNIEnv* env, jclass cls, jobject arg0, jshortArray arg1) {
-    char* ptr0 = arg0 == NULL ? NULL : (char*)jlong_to_ptr(env->GetLongField(arg0, JavaCPP_addressFID));
-    jint position0 = arg0 == NULL ? 0 : env->GetIntField(arg0, JavaCPP_positionFID);
-    ptr0 += position0;
-    short* ptr1 = arg1 == NULL ? NULL : env->GetShortArrayElements(arg1, NULL);
-    jint rarg = 0;
-    jthrowable exc = NULL;
-    try {
-        int rvalue = speex_preprocess_run((SpeexPreprocessState*)ptr0, ptr1);
-        rarg = (jint)rvalue;
-    } catch (...) {
-        exc = JavaCPP_handleException(env, 15);
-    }
-
-    if (arg1 != NULL) env->ReleaseShortArrayElements(arg1, (jshort*)ptr1, 0);
-    if (exc != NULL) {
-        env->Throw(exc);
-    }
-    return rarg;
-}
-JNIEXPORT jint JNICALL Java_se_lublin_humla_audio_javacpp_Speex_speex_1preprocess(JNIEnv* env, jclass cls, jobject arg0, jshortArray arg1, jintArray arg2) {
-    char* ptr0 = arg0 == NULL ? NULL : (char*)jlong_to_ptr(env->GetLongField(arg0, JavaCPP_addressFID));
-    jint position0 = arg0 == NULL ? 0 : env->GetIntField(arg0, JavaCPP_positionFID);
-    ptr0 += position0;
-    short* ptr1 = arg1 == NULL ? NULL : env->GetShortArrayElements(arg1, NULL);
-    int* ptr2 = arg2 == NULL ? NULL : env->GetIntArrayElements(arg2, NULL);
-    jint rarg = 0;
-    jthrowable exc = NULL;
-    try {
-        int rvalue = speex_preprocess((SpeexPreprocessState*)ptr0, ptr1, ptr2);
-        rarg = (jint)rvalue;
-    } catch (...) {
-        exc = JavaCPP_handleException(env, 15);
-    }
-
-    if (arg1 != NULL) env->ReleaseShortArrayElements(arg1, (jshort*)ptr1, 0);
-    if (arg2 != NULL) env->ReleaseIntArrayElements(arg2, (jint*)ptr2, 0);
-    if (exc != NULL) {
-        env->Throw(exc);
-    }
-    return rarg;
-}
-JNIEXPORT void JNICALL Java_se_lublin_humla_audio_javacpp_Speex_speex_1preprocess_1estimate_1update(JNIEnv* env, jclass cls, jobject arg0, jshortArray arg1) {
-    char* ptr0 = arg0 == NULL ? NULL : (char*)jlong_to_ptr(env->GetLongField(arg0, JavaCPP_addressFID));
-    jint position0 = arg0 == NULL ? 0 : env->GetIntField(arg0, JavaCPP_positionFID);
-    ptr0 += position0;
-    short* ptr1 = arg1 == NULL ? NULL : env->GetShortArrayElements(arg1, NULL);
-    jthrowable exc = NULL;
-    try {
-        speex_preprocess_estimate_update((SpeexPreprocessState*)ptr0, ptr1);
-    } catch (...) {
-        exc = JavaCPP_handleException(env, 15);
-    }
-
-    if (arg1 != NULL) env->ReleaseShortArrayElements(arg1, (jshort*)ptr1, 0);
-    if (exc != NULL) {
-        env->Throw(exc);
-    }
-}
-JNIEXPORT jint JNICALL Java_se_lublin_humla_audio_javacpp_Speex_speex_1preprocess_1ctl(JNIEnv* env, jclass cls, jobject arg0, jint arg1, jobject arg2) {
-    char* ptr0 = arg0 == NULL ? NULL : (char*)jlong_to_ptr(env->GetLongField(arg0, JavaCPP_addressFID));
-    jint position0 = arg0 == NULL ? 0 : env->GetIntField(arg0, JavaCPP_positionFID);
-    ptr0 += position0;
-    char* ptr2 = arg2 == NULL ? NULL : (char*)jlong_to_ptr(env->GetLongField(arg2, JavaCPP_addressFID));
-    jint position2 = arg2 == NULL ? 0 : env->GetIntField(arg2, JavaCPP_positionFID);
-    ptr2 += position2;
-    jint rarg = 0;
-    jthrowable exc = NULL;
-    try {
-        int rvalue = speex_preprocess_ctl((SpeexPreprocessState*)ptr0, arg1, ptr2);
         rarg = (jint)rvalue;
     } catch (...) {
         exc = JavaCPP_handleException(env, 15);

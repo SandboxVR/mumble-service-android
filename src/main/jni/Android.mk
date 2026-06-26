@@ -28,13 +28,29 @@ LOCAL_SRC_FILES     := cb_search.c      exc_10_32_table.c   exc_8_128_table.c   
                        exc_5_64_table.c gain_table_lbr.c    hexc_10_32_table.c  lpc.c \
                        lsp_tables_nb.c  modes.c             modes_wb.c          nb_celp.c \
                        quant_lsp.c      sb_celp.c           speex_callbacks.c   speex_header.c \
-                       window.c         resample.c          jitter.c            preprocess.c \
+                       window.c         resample.c          jitter.c \
                        mdf.c            kiss_fft.c          kiss_fftr.c         fftwrap.c \
                        filterbank.c     scal.c \
                        $(ROOT)/jnispeex.cpp
 LOCAL_CFLAGS           := -D__EMX__ -DUSE_KISS_FFT -DFIXED_POINT -DEXPORT=''
 LOCAL_CPP_FEATURES := exceptions
 LOCAL_LDLIBS := -llog
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_PATH          := $(ROOT)/rnnoise
+LOCAL_MODULE        := jnirnnoise
+LOCAL_SRC_FILES     := src/celt_lpc.c src/denoise.c src/kiss_fft.c src/nnet.c \
+                       src/nnet_default.c src/parse_lpcnet_weights.c src/pitch.c \
+                       src/rnn.c src/rnnoise_tables.c \
+                       $(ROOT)/rnnoise-build/src/rnnoise_data.c \
+                       $(ROOT)/jnirnnoise.cpp
+LOCAL_C_INCLUDES    := $(ROOT)/rnnoise-build $(ROOT)/rnnoise-build/src \
+                       $(ROOT)/rnnoise/include $(ROOT)/rnnoise/src \
+                       $(ROOT)/opus/include $(ROOT)/opus/celt
+LOCAL_CFLAGS        := -DRNNOISE_BUILD
+LOCAL_CPP_FEATURES  := exceptions
+LOCAL_LDLIBS        := -llog -lm
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
