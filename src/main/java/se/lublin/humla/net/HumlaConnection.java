@@ -25,7 +25,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
-import org.spongycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -549,17 +549,17 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
         } catch (NoSuchAlgorithmException e) {
                 /*
                  * This will actually NEVER occur.
-                 * We use Spongy Castle to provide the algorithm and provider implementations.
+                 * We use Bouncy Castle to provide the algorithm and provider implementations.
                  * There's no platform dependency.
                  */
-            throw new RuntimeException("We use Spongy Castle- what? ", e);
+            throw new RuntimeException("We use Bouncy Castle- what? ", e);
         } catch (NoSuchProviderException e) {
                 /*
                  * This will actually NEVER occur.
-                 * We use Spongy Castle to provide the algorithm and provider implementations.
+                 * We use Bouncy Castle to provide the algorithm and provider implementations.
                  * There's no platform dependency.
                  */
-            throw new RuntimeException("We use Spongy Castle- what? ", e);
+            throw new RuntimeException("We use Bouncy Castle- what? ", e);
         }
     }
 

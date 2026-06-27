@@ -17,15 +17,15 @@
 
 package se.lublin.humla.net;
 
-import org.spongycastle.asn1.x500.X500Name;
-import org.spongycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.spongycastle.cert.X509CertificateHolder;
-import org.spongycastle.cert.X509v3CertificateBuilder;
-import org.spongycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.spongycastle.jce.provider.BouncyCastleProvider;
-import org.spongycastle.operator.ContentSigner;
-import org.spongycastle.operator.OperatorCreationException;
-import org.spongycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -47,7 +47,7 @@ public class HumlaCertificateGenerator {
     private static final Integer YEARS_VALID = 20;
 
     public static X509Certificate generateCertificate(OutputStream output) throws NoSuchAlgorithmException, OperatorCreationException, CertificateException, KeyStoreException, NoSuchProviderException, IOException {
-        BouncyCastleProvider provider = new BouncyCastleProvider(); // Use SpongyCastle provider, supports creating X509 certs
+        BouncyCastleProvider provider = new BouncyCastleProvider(); // Supports creating X509 certs.
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(2048, new SecureRandom());
 

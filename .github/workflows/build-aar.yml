@@ -19,7 +19,6 @@ env:
   # Keep these Android tool versions in sync with alvr_private's release-build.yml.
   ANDROID_BUILD_TOOLS_VERSION: "33.0.0"
   ANDROID_PLATFORM_VERSION: "29"
-  GRADLE_LEGACY_VERSION: "4.10.3"
 
 jobs:
   aar:
@@ -33,49 +32,6 @@ jobs:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
           fetch-depth: 0
           submodules: recursive
-
-      - name: Set up Java 8 for SpongyCastle
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
-        with:
-          distribution: temurin
-          java-version: "8"
-
-      - name: Download legacy Gradle
-        run: |
-          set -euo pipefail
-
-          gradle_zip="gradle-${GRADLE_LEGACY_VERSION}-bin.zip"
-          gradle_url="https://services.gradle.org/distributions/${gradle_zip}"
-
-          curl -L "${gradle_url}" -o "${RUNNER_TEMP}/${gradle_zip}"
-          curl -L "${gradle_url}.sha256" -o "${RUNNER_TEMP}/${gradle_zip}.sha256"
-
-          expected_hash="$(head -n 1 "${RUNNER_TEMP}/${gradle_zip}.sha256" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
-          actual_hash="$(sha256sum "${RUNNER_TEMP}/${gradle_zip}" | awk '{print $1}')"
-
-          if [ "${actual_hash}" != "${expected_hash}" ]; then
-            echo "Gradle ${GRADLE_LEGACY_VERSION} checksum mismatch"
-            echo "Expected: ${expected_hash}"
-            echo "Actual:   ${actual_hash}"
-            exit 1
-          fi
-
-          unzip -q "${RUNNER_TEMP}/${gradle_zip}" -d "${RUNNER_TEMP}"
-          echo "${RUNNER_TEMP}/gradle-${GRADLE_LEGACY_VERSION}/bin" >> "${GITHUB_PATH}"
-
-      - name: Build custom SpongyCastle jars
-        working-directory: libs/humla-spongycastle
-        run: |
-          set -euo pipefail
-
-          java -version
-          javac -version
-          test -f "${JAVA_HOME}/lib/tools.jar"
-
-          gradle --no-daemon :prov:jar :pkix:jar
-
-          test -f prov/build/libs/prov-1.51.0.0.jar
-          test -f pkix/build/libs/pkix-1.51.0.0.jar
 
       - name: Download Temurin JDK 17 from GCP bucket
         run: |
@@ -168,9 +124,6 @@ jobs:
           require_aar_entry 'jni/arm64-v8a/libjniopus.so'
           require_aar_entry 'jni/arm64-v8a/libjnispeex.so'
           require_aar_entry 'jni/arm64-v8a/libjnirnnoise.so'
-          require_aar_entry 'libs/prov-1.51.0.0.jar'
-          require_aar_entry 'libs/pkix-1.51.0.0.jar'
-
           if grep -Eq '^jni/(armeabi-v7a|x86|x86_64)/' "${RUNNER_TEMP}/aar-files.txt"; then
             echo "::error::Unexpected non-arm64 ABI in AAR"
             grep -E '^jni/(armeabi-v7a|x86|x86_64)/' "${RUNNER_TEMP}/aar-files.txt"
