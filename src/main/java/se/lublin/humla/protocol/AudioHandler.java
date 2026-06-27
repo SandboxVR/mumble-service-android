@@ -24,8 +24,6 @@ import android.util.Log;
 import se.lublin.humla.R;
 import se.lublin.humla.audio.AudioInput;
 import se.lublin.humla.audio.AudioOutput;
-import se.lublin.humla.audio.encoder.CELT11Encoder;
-import se.lublin.humla.audio.encoder.CELT7Encoder;
 import se.lublin.humla.audio.encoder.IEncoder;
 import se.lublin.humla.audio.encoder.OpusEncoder;
 import se.lublin.humla.audio.encoder.ResamplingEncoder;
@@ -212,23 +210,13 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
             return;
         }
 
-        IEncoder encoder;
-        switch (codec) {
-            case UDPVoiceCELTAlpha:
-                encoder = new CELT7Encoder(SAMPLE_RATE, AudioHandler.FRAME_SIZE, 1,
-                        mFramesPerPacket, mBitrate, MAX_BUFFER_SIZE);
-                break;
-            case UDPVoiceCELTBeta:
-                encoder = new CELT11Encoder(SAMPLE_RATE, 1, mFramesPerPacket);
-                break;
-            case UDPVoiceOpus:
-                encoder = new OpusEncoder(SAMPLE_RATE, 1, FRAME_SIZE, mFramesPerPacket, mBitrate,
-                        MAX_BUFFER_SIZE);
-                break;
-            default:
-                Log.w(TAG, "Unsupported codec, input disabled.");
-                return;
+        if (codec != HumlaUDPMessageType.UDPVoiceOpus) {
+            Log.e(TAG, "Unsupported negotiated codec " + codec + ". Opus is required.");
+            return;
         }
+
+        IEncoder encoder = new OpusEncoder(SAMPLE_RATE, 1, FRAME_SIZE, mFramesPerPacket, mBitrate,
+                MAX_BUFFER_SIZE);
 
         if (mPreprocessorEnabled) {
             encoder = new RnNoiseEncoder(encoder, FRAME_SIZE);
@@ -343,14 +331,19 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
         if (!mInitialized)
             return; // Only listen to change events in this handler.
 
-        HumlaUDPMessageType codec;
-        if (msg.hasOpus() && msg.getOpus()) {
-            codec = HumlaUDPMessageType.UDPVoiceOpus;
-        } else if (msg.hasBeta() && !msg.getPreferAlpha()) {
-            codec = HumlaUDPMessageType.UDPVoiceCELTBeta;
-        } else {
-            codec = HumlaUDPMessageType.UDPVoiceCELTAlpha;
+        if (!msg.hasOpus() || !msg.getOpus()) {
+            Log.e(TAG, "Server switched away from Opus. Audio input disabled.");
+            try {
+                synchronized (mEncoderLock) {
+                    setCodec(null);
+                }
+            } catch (NativeAudioException e) {
+                e.printStackTrace();
+            }
+            return;
         }
+
+        HumlaUDPMessageType codec = HumlaUDPMessageType.UDPVoiceOpus;
 
         if (codec != mCodec) {
             try {

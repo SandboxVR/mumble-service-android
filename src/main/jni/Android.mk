@@ -54,30 +54,6 @@ LOCAL_LDLIBS        := -llog -lm
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_PATH          := $(ROOT)/celt-0.11.0-src/libcelt
-LOCAL_MODULE        := jnicelt11
-LOCAL_SRC_FILES     := bands.c celt.c cwrs.c entcode.c entdec.c entenc.c header.c kiss_fft.c \
-                       laplace.c mathops.c mdct.c modes.c pitch.c plc.c quant_bands.c rate.c vq.c \
-                       $(ROOT)/jnicelt11.cpp
-LOCAL_C_INCLUDES    := $(ROOT)/celt-0.11.0-src/libcelt/
-LOCAL_CFLAGS        := -I$(ROOT)/celt-0.11.0-build -DHAVE_CONFIG_H -fvisibility=hidden
-LOCAL_CPP_FEATURES := exceptions
-LOCAL_LDLIBS := -llog
-include $(BUILD_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_PATH          := $(ROOT)/celt-0.7.0-src/libcelt
-LOCAL_MODULE        := jnicelt7
-LOCAL_SRC_FILES     := bands.c celt.c cwrs.c entcode.c entdec.c entenc.c header.c kiss_fft.c \
-                       kiss_fftr.c laplace.c mdct.c modes.c pitch.c psy.c quant_bands.c rangedec.c \
-                       rangeenc.c rate.c vq.c $(ROOT)/jnicelt7.cpp
-LOCAL_C_INCLUDES    := $(ROOT)/celt-0.7.0-src/libcelt/
-LOCAL_CFLAGS        := -I$(ROOT)/celt-0.7.0-build -DHAVE_CONFIG_H -fvisibility=hidden
-LOCAL_CPP_FEATURES := exceptions
-LOCAL_LDLIBS := -llog
-include $(BUILD_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
 LOCAL_PATH   := $(ROOT)/opus
 LOCAL_MODULE := jniopus
 

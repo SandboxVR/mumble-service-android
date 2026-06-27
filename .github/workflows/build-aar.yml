@@ -142,8 +142,6 @@ jobs:
           # Generate JNI libraries before assembleRelease snapshots jniLibs.
           ./gradlew --no-daemon ndkBuild
 
-          test -f src/main/libs/arm64-v8a/libjnicelt11.so
-          test -f src/main/libs/arm64-v8a/libjnicelt7.so
           test -f src/main/libs/arm64-v8a/libjniopus.so
           test -f src/main/libs/arm64-v8a/libjnispeex.so
           test -f src/main/libs/arm64-v8a/libjnirnnoise.so
@@ -167,8 +165,6 @@ jobs:
             fi
           }
 
-          require_aar_entry 'jni/arm64-v8a/libjnicelt11.so'
-          require_aar_entry 'jni/arm64-v8a/libjnicelt7.so'
           require_aar_entry 'jni/arm64-v8a/libjniopus.so'
           require_aar_entry 'jni/arm64-v8a/libjnispeex.so'
           require_aar_entry 'jni/arm64-v8a/libjnirnnoise.so'

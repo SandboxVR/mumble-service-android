@@ -117,7 +117,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
     private String mServerOSName;
     private String mServerOSVersion;
     private int mMaxBandwidth;
-    private HumlaUDPMessageType mCodec;
+    private HumlaUDPMessageType mCodec = HumlaUDPMessageType.UDPVoiceOpus;
 
     // Session
     private int mSession;
@@ -160,12 +160,12 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
         @Override
         public void messageCodecVersion(Mumble.CodecVersion msg) {
-            if(msg.hasOpus() && msg.getOpus())
+            if(msg.hasOpus() && msg.getOpus()) {
                 mCodec = HumlaUDPMessageType.UDPVoiceOpus;
-            else if(msg.hasBeta() && !msg.getPreferAlpha())
-                mCodec = HumlaUDPMessageType.UDPVoiceCELTBeta;
-            else
-                mCodec = HumlaUDPMessageType.UDPVoiceCELTAlpha;
+            } else {
+                handleFatalException(new HumlaException("Server did not negotiate Opus voice. " +
+                        "This client requires Opus.", HumlaException.HumlaDisconnectReason.OTHER_ERROR));
+            }
         }
 
         @Override
@@ -595,8 +595,6 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
             }
             packetData = protobufPacket;
             packetLength = protobufPacket.length;
-        } else if (mServerVersion == 0x10202) {
-            applyLegacyCodecWorkaround(data);
         }
         if (!force && (shouldForceTCP() || !mUsingUDP))
             mTCP.sendMessage(packetData, packetLength, HumlaTCPMessageType.UDPTunnel);
@@ -706,7 +704,6 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
             }
         }
 
-        if(mServerVersion == 0x10202) applyLegacyCodecWorkaround(data);
         int dataType = data[0] >> 5 & 0x7;
         if(dataType < 0 || dataType > HumlaUDPMessageType.values().length - 1) return; // Discard invalid data types
         HumlaUDPMessageType udpDataType = HumlaUDPMessageType.values()[dataType];
@@ -729,19 +726,6 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
         // Send an empty cryptstate message to resync.
         Mumble.CryptSetup.Builder csb = Mumble.CryptSetup.newBuilder();
         mTCP.sendMessage(csb.build(), HumlaTCPMessageType.CryptSetup);
-    }
-
-    /**
-     * Workaround for 1.2.2 servers that report the old types for CELT alpha and beta.
-     * @param data The UDP data to be patched, if we're on a 1.2.2 server.
-     */
-    private void applyLegacyCodecWorkaround(byte[] data) {
-        HumlaUDPMessageType dataType = HumlaUDPMessageType.values()[data[0] >> 5 & 0x7];
-        if(dataType == HumlaUDPMessageType.UDPVoiceCELTBeta)
-            dataType = HumlaUDPMessageType.UDPVoiceCELTAlpha;
-        else if(dataType == HumlaUDPMessageType.UDPVoiceCELTAlpha)
-            dataType = HumlaUDPMessageType.UDPVoiceCELTBeta;
-        data[0] = (byte) ((dataType.ordinal() << 5) & 0xFF);
     }
 
     /**
@@ -923,11 +907,13 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
             case UDPPing:
                 handler.messageUDPPing(data);
                 break;
+            case UDPVoiceOpus:
+                handler.messageVoiceData(data, messageType);
+                break;
             case UDPVoiceCELTAlpha:
             case UDPVoiceSpeex:
             case UDPVoiceCELTBeta:
-            case UDPVoiceOpus:
-                handler.messageVoiceData(data, messageType);
+                Log.w(TAG, "Dropping unsupported non-Opus UDP voice packet: " + messageType);
                 break;
         }
     }

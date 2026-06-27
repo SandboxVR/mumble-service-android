@@ -27,8 +27,6 @@ import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import se.lublin.humla.audio.javacpp.CELT11;
-import se.lublin.humla.audio.javacpp.CELT7;
 import se.lublin.humla.audio.javacpp.Opus;
 import se.lublin.humla.audio.javacpp.Speex;
 import se.lublin.humla.exception.NativeAudioException;
@@ -77,21 +75,11 @@ public class AudioOutputSpeech implements Callable<AudioOutputSpeech.Result> {
         mCodec = codec;
         mRequestedSamples = requestedSamples;
         mTalkStateListener = listener;
-        switch (codec) {
-            case UDPVoiceOpus:
-                mAudioBufferSize *= 12;
-                mDecoder = new Opus.OpusDecoder(AudioHandler.SAMPLE_RATE, 1);
-                break;
-            case UDPVoiceCELTBeta:
-                mDecoder = new CELT11.CELT11Decoder(AudioHandler.SAMPLE_RATE, 1);
-                break;
-            case UDPVoiceCELTAlpha:
-                mDecoder = new CELT7.CELT7Decoder(AudioHandler.SAMPLE_RATE, AudioHandler.FRAME_SIZE, 1);
-                break;
-            case UDPVoiceSpeex:
-                mDecoder = new Speex.SpeexDecoder();
-                break;
+        if (codec != HumlaUDPMessageType.UDPVoiceOpus) {
+            throw new NativeAudioException("Unsupported voice codec " + codec + ". Opus is required.");
         }
+        mAudioBufferSize *= 12;
+        mDecoder = new Opus.OpusDecoder(AudioHandler.SAMPLE_RATE, 1);
 
         mBuffer = new float[mAudioBufferSize*2]; // Make initial buffer size larger so we can save performance by not resizing at runtime.
         mOut = new float[mAudioBufferSize];
@@ -115,31 +103,18 @@ public class AudioOutputSpeech implements Callable<AudioOutputSpeech.Result> {
 
         synchronized (mJitterLock) {
             try {
-                int samples = 0;
-                if (mCodec == HumlaUDPMessageType.UDPVoiceOpus) {
-                    long header = pb.readLong();
-                    int size = (int) (header & ((1 << 13) - 1));
+                long header = pb.readLong();
+                int opusSize = (int) (header & ((1 << 13) - 1));
+                int samples;
 
-                    if (size > 0) {
-                        byte[] data = pb.dataBlock(size);
-                        if (data.length != size) return;
+                if (opusSize > 0) {
+                    byte[] data = pb.dataBlock(opusSize);
+                    if (data.length != opusSize) return;
 
-                        int frames = Opus.opus_packet_get_nb_frames(data, size);
-                        samples = frames * Opus.opus_packet_get_samples_per_frame(data, AudioHandler.SAMPLE_RATE);
-                    } else {
-                        return;
-                    }
+                    int frames = Opus.opus_packet_get_nb_frames(data, opusSize);
+                    samples = frames * Opus.opus_packet_get_samples_per_frame(data, AudioHandler.SAMPLE_RATE);
                 } else {
-                    try {
-                        int header;
-                        do {
-                            header = pb.next();
-                            samples += AudioHandler.FRAME_SIZE;
-                            pb.skip(header & 0x7f);
-                        } while ((header & 0x80) > 0);
-                    } catch (BufferUnderflowException e) {
-                        // reached end of buffer
-                    }
+                    return;
                 }
                 pb.rewind();
 
@@ -221,25 +196,12 @@ public class AudioOutputSpeech implements Callable<AudioOutputSpeech.Result> {
 
                         mHasTerminator = false;
                         try {
-                            if (mCodec == HumlaUDPMessageType.UDPVoiceOpus) {
-                                long header = pb.readLong();
-                                int size = (int) (header & ((1 << 13) - 1));
-                                mHasTerminator = (header & (1 << 13)) > 0;
+                            long header = pb.readLong();
+                            int size = (int) (header & ((1 << 13) - 1));
+                            mHasTerminator = (header & (1 << 13)) > 0;
 
-                                ByteBuffer audioData = pb.bufferBlock(size);
-                                mFrames.add(audioData);
-                            } else {
-                                int header;
-                                do {
-                                    header = pb.next();
-                                    int size = header & 0x7f;
-                                    if (header > 0) {
-                                        mFrames.add(pb.bufferBlock(size));
-                                    } else {
-                                        mHasTerminator = true;
-                                    }
-                                } while ((header & 0x80) > 0);
-                            }
+                            ByteBuffer audioData = pb.bufferBlock(size);
+                            mFrames.add(audioData);
                         } catch (BufferOverflowException e) {
                             e.printStackTrace();
                         } catch (BufferUnderflowException e) {
