@@ -27,14 +27,37 @@ import se.lublin.humla.net.PacketBuffer;
  * Wrapper performing RNNoise suppression before handing frames to the nested encoder.
  */
 public class RnNoiseEncoder implements IEncoder {
+    // Aggressive store/headset profile: preserve speech while crushing low-speech taps/clicks.
+    private static final float VOICE_OPEN_PROBABILITY = 0.62f;
+    private static final float VOICE_CLOSE_PROBABILITY = 0.42f;
+    private static final float NON_SPEECH_GAIN = 0.02f;
+    private static final float TRANSIENT_GAIN = 0.005f;
+    private static final float GAIN_ATTACK = 0.70f;
+    private static final float GAIN_RELEASE = 0.25f;
+    private static final int SPEECH_HANGOVER_FRAMES = 8;
+
+    private static final float TRANSIENT_MIN_PEAK = 4500.0f;
+    private static final float TRANSIENT_MIN_RMS = 550.0f;
+    private static final float TRANSIENT_MIN_CREST_FACTOR = 5.5f;
+    private static final float TRANSIENT_SPIKE_RATIO = 3.5f;
+    private static final float TRANSIENT_MAX_VOICE_PROBABILITY = 0.50f;
+
     private IEncoder mEncoder;
     private RnNoise mDenoiser;
     private final int mFrameSize;
+    private int mSpeechHangoverFrames;
+    private boolean mGateOpen;
+    private float mPostGain;
+    private float mPreviousRawRms;
 
     public RnNoiseEncoder(IEncoder encoder, int frameSize) {
         mEncoder = encoder;
         mFrameSize = frameSize;
         mDenoiser = new RnNoise(frameSize);
+        mSpeechHangoverFrames = 0;
+        mGateOpen = false;
+        mPostGain = NON_SPEECH_GAIN;
+        mPreviousRawRms = 0.0f;
     }
 
     @Override
@@ -42,8 +65,87 @@ public class RnNoiseEncoder implements IEncoder {
         if (inputSize != mFrameSize) {
             throw new IllegalArgumentException("RNNoise requires a constant 480-sample frame size.");
         }
-        mDenoiser.process(input, inputSize);
+        FrameStats rawStats = analyzeFrame(input, inputSize);
+        float voiceProbability = mDenoiser.process(input, inputSize);
+        applyVoiceGate(input, inputSize, rawStats, voiceProbability);
         return mEncoder.encode(input, inputSize);
+    }
+
+    private FrameStats analyzeFrame(short[] input, int inputSize) {
+        long sumSquares = 0;
+        int peak = 0;
+
+        for (int i = 0; i < inputSize; i++) {
+            int sample = input[i];
+            int abs = Math.abs(sample);
+            peak = Math.max(peak, abs);
+            sumSquares += sample * sample;
+        }
+
+        float rms = (float) Math.sqrt(sumSquares / (float) inputSize);
+        return new FrameStats(peak, rms);
+    }
+
+    private void applyVoiceGate(short[] input, int inputSize, FrameStats rawStats,
+                                float voiceProbability) {
+        boolean hadRecentSpeech = mSpeechHangoverFrames > 0;
+        boolean speechDetected = voiceProbability >= VOICE_OPEN_PROBABILITY ||
+                (mGateOpen && voiceProbability >= VOICE_CLOSE_PROBABILITY);
+        boolean transientDetected = isTransient(rawStats, voiceProbability) && !hadRecentSpeech;
+
+        if (speechDetected) {
+            mSpeechHangoverFrames = SPEECH_HANGOVER_FRAMES;
+        } else if (mSpeechHangoverFrames > 0) {
+            mSpeechHangoverFrames--;
+        }
+
+        mGateOpen = speechDetected || mSpeechHangoverFrames > 0;
+
+        float targetGain = mGateOpen ? 1.0f : NON_SPEECH_GAIN;
+        if (transientDetected) {
+            targetGain = TRANSIENT_GAIN;
+            mPostGain = Math.min(mPostGain, TRANSIENT_GAIN);
+        }
+
+        float smoothing = targetGain > mPostGain ? GAIN_ATTACK : GAIN_RELEASE;
+        mPostGain += (targetGain - mPostGain) * smoothing;
+
+        if (mPostGain < 0.999f) {
+            applyGain(input, inputSize, mPostGain);
+        }
+
+        mPreviousRawRms = rawStats.rms;
+    }
+
+    private boolean isTransient(FrameStats rawStats, float voiceProbability) {
+        if (voiceProbability > TRANSIENT_MAX_VOICE_PROBABILITY ||
+                rawStats.peak < TRANSIENT_MIN_PEAK ||
+                rawStats.rms < TRANSIENT_MIN_RMS) {
+            return false;
+        }
+
+        float crestFactor = rawStats.peak / Math.max(rawStats.rms, 1.0f);
+        boolean sharpImpulse = crestFactor >= TRANSIENT_MIN_CREST_FACTOR;
+        boolean suddenSpike = mPreviousRawRms > 0.0f &&
+                rawStats.rms >= (mPreviousRawRms * TRANSIENT_SPIKE_RATIO);
+
+        return sharpImpulse || suddenSpike;
+    }
+
+    private void applyGain(short[] input, int inputSize, float gain) {
+        for (int i = 0; i < inputSize; i++) {
+            input[i] = (short) (input[i] * gain);
+        }
+    }
+
+    private static final class FrameStats {
+        private final int peak;
+        private final float rms;
+
+        private FrameStats(int peak, float rms) {
+            this.peak = peak;
+            this.rms = rms;
+        }
     }
 
     @Override
