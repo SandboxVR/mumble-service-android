@@ -18,6 +18,7 @@
 package se.lublin.humla.audio.encoder;
 
 import com.googlecode.javacpp.IntPointer;
+import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.Pointer;
 
 import java.nio.BufferOverflowException;
@@ -46,6 +47,8 @@ public class OpusEncoder implements IEncoder {
 
     public OpusEncoder(int sampleRate, int channels, int frameSize, int framesPerPacket,
                        int bitrate, int maxBufferSize) throws NativeAudioException {
+        Loader.load(Opus.class);
+
         mBuffer = new byte[maxBufferSize];
         mAudioBuffer = new short[framesPerPacket * frameSize];
         mFramesPerPacket = framesPerPacket;

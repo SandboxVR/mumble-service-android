@@ -319,6 +319,8 @@ public class Speex {
         private int mFrameSize;
 
         public JitterBuffer(int frameSize) {
+            Loader.load(Speex.class);
+
             mNativeBuffer = jitter_buffer_init(frameSize);
             mFrameSize = frameSize;
         }
@@ -361,6 +363,8 @@ public class Speex {
         private Pointer mNativeState;
 
         public SpeexResampler(int channels, int inSampleRate, int outSampleRate, int quality) {
+            Loader.load(Speex.class);
+
             mNativeState = speex_resampler_init(channels, inSampleRate, outSampleRate, quality, null);
         }
 
@@ -378,6 +382,8 @@ public class Speex {
     public static class SpeexBits extends Pointer {
 
         public SpeexBits() {
+            Loader.load(Speex.class);
+
             allocate();
             speex_bits_init(this);
         }
@@ -399,6 +405,8 @@ public class Speex {
         private Pointer mState;
 
         public SpeexDecoder() {
+            Loader.load(Speex.class);
+
             mBits = new Speex.SpeexBits();
             mState = Speex.speex_decoder_init(Speex.speex_lib_get_mode(Speex.SPEEX_MODEID_UWB));
             IntPointer enh = new IntPointer();

@@ -18,6 +18,7 @@
 package se.lublin.humla.audio;
 
 import com.googlecode.javacpp.IntPointer;
+import com.googlecode.javacpp.Loader;
 
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
@@ -65,11 +66,14 @@ public class AudioOutputSpeech implements Callable<AudioOutputSpeech.Result> {
     private boolean mLastAlive = true;
     private int mBufferFilled, mLastConsume = 0;
     private int ucFlags;
-    private IntPointer avail = new IntPointer(1);
+    private IntPointer avail;
 
     private TalkStateListener mTalkStateListener;
 
     public AudioOutputSpeech(User user, HumlaUDPMessageType codec, int requestedSamples, TalkStateListener listener) throws NativeAudioException {
+        Loader.load(Opus.class);
+        Loader.load(Speex.class);
+
         // TODO: consider implementing resampling if some Android devices not support 48kHz?
         mUser = user;
         mCodec = codec;
@@ -78,6 +82,7 @@ public class AudioOutputSpeech implements Callable<AudioOutputSpeech.Result> {
         if (codec != HumlaUDPMessageType.UDPVoiceOpus) {
             throw new NativeAudioException("Unsupported voice codec " + codec + ". Opus is required.");
         }
+        avail = new IntPointer(1);
         mAudioBufferSize *= 12;
         mDecoder = new Opus.OpusDecoder(AudioHandler.SAMPLE_RATE, 1);
 

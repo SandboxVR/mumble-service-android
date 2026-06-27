@@ -73,6 +73,8 @@ public class Opus {
         private Pointer mState;
 
         public OpusDecoder(int sampleRate, int channels) throws NativeAudioException {
+            Loader.load(Opus.class);
+
             IntPointer error = new IntPointer(1);
             error.put(0);
             mState = opus_decoder_create(sampleRate, channels, error);
