@@ -20,7 +20,7 @@ include $(CLEAR_VARS)
 
 LOCAL_PATH          := $(ROOT)/speex/libspeex
 LOCAL_MODULE        := jnispeex
-LOCAL_C_INCLUDES    := $(ROOT)/speex/include/
+LOCAL_C_INCLUDES    := $(ROOT)/speex/include/ $(ROOT)/speexdsp/include/
 LOCAL_SRC_FILES     := cb_search.c      exc_10_32_table.c   exc_8_128_table.c   filters.c \
                        gain_table.c     hexc_table.c        high_lsp_tables.c   lsp.c \
                        ltp.c            speex.c             stereo.c            vbr.c \
@@ -28,9 +28,9 @@ LOCAL_SRC_FILES     := cb_search.c      exc_10_32_table.c   exc_8_128_table.c   
                        exc_5_64_table.c gain_table_lbr.c    hexc_10_32_table.c  lpc.c \
                        lsp_tables_nb.c  modes.c             modes_wb.c          nb_celp.c \
                        quant_lsp.c      sb_celp.c           speex_callbacks.c   speex_header.c \
-                       window.c         resample.c          jitter.c \
-                       mdf.c            kiss_fft.c          kiss_fftr.c         fftwrap.c \
-                       filterbank.c     scal.c \
+                       window.c \
+                       $(ROOT)/speexdsp/libspeexdsp/resample.c \
+                       $(ROOT)/speexdsp/libspeexdsp/jitter.c \
                        $(ROOT)/jnispeex.cpp
 LOCAL_CFLAGS           := -D__EMX__ -DUSE_KISS_FFT -DFIXED_POINT -DEXPORT=''
 LOCAL_CPP_FEATURES := exceptions

@@ -3,7 +3,7 @@
 	url = https://github.com/SandboxVR/opus
 [submodule "src/main/jni/speex"]
 	path = src/main/jni/speex
-	url = https://github.com/xiph/speex
+	url = https://github.com/SandboxVR/speex
 [submodule "libs/humla-spongycastle"]
 	path = libs/humla-spongycastle
 	url = https://gitlab.com/quite/humla-spongycastle.git
@@ -11,3 +11,6 @@
 [submodule "src/main/jni/rnnoise"]
 	path = src/main/jni/rnnoise
 	url = https://github.com/SandboxVR/rnnoise
+[submodule "src/main/jni/speexdsp"]
+	path = src/main/jni/speexdsp
+	url = https://github.com/SandboxVR/speexdsp
