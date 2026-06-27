@@ -61,7 +61,7 @@ public class ServerConnectTask extends AsyncTask<Server, Void, Intent> {
         connectIntent.putExtra(HumlaService.EXTRAS_FORCE_TCP, false);
         connectIntent.putExtra(HumlaService.EXTRAS_USE_TOR, false);
         connectIntent.putStringArrayListExtra(HumlaService.EXTRAS_ACCESS_TOKENS, new ArrayList<String>());
-        connectIntent.putExtra(HumlaService.EXTRAS_AUDIO_SOURCE, MediaRecorder.AudioSource.MIC);
+        connectIntent.putExtra(HumlaService.EXTRAS_AUDIO_SOURCE, MediaRecorder.AudioSource.UNPROCESSED);
         connectIntent.putExtra(HumlaService.EXTRAS_AUDIO_STREAM, AudioManager.STREAM_MUSIC);
         connectIntent.putExtra(HumlaService.EXTRAS_FRAMES_PER_PACKET, 2);
         connectIntent.putExtra(HumlaService.EXTRAS_HALF_DUPLEX, false);

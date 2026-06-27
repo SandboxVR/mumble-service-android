@@ -17,8 +17,16 @@
 
 package se.lublin.humla.audio;
 
+import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioRecord;
+import android.media.MediaRecorder;
+import android.media.audiofx.AcousticEchoCanceler;
+import android.media.audiofx.AutomaticGainControl;
+import android.media.audiofx.NoiseSuppressor;
+import android.os.Build;
 import android.util.Log;
 
 import se.lublin.humla.exception.AudioInitializationException;
@@ -37,11 +45,12 @@ public class AudioInput implements Runnable {
     private AudioInputListener mListener;
     private AudioRecord mAudioRecord;
     private final int mFrameSize;
+    private int mAudioSource;
 
     private Thread mRecordThread;
     private boolean mRecording;
 
-    public AudioInput(AudioInputListener listener, int audioSource, int targetSampleRate)
+    public AudioInput(AudioInputListener listener, int audioSource, int targetSampleRate, Context context)
             throws NativeAudioException, AudioInitializationException {
         mListener = listener;
 
@@ -49,13 +58,22 @@ public class AudioInput implements Runnable {
         // If it fails, keep producing AudioRecord instances until we find one that initializes
         // correctly. Maybe one day Android will let us probe for supported sample rates, as we
         // aren't even guaranteed that 44100hz will work across all devices.
+        int[] audioSources = getAudioSourceCandidates(audioSource);
         for (int i = 0; i < SAMPLE_RATES.length + 1; i++) {
             int sampleRate = i == 0 ? targetSampleRate : SAMPLE_RATES[i - 1];
-            try {
-                mAudioRecord = setupAudioRecord(sampleRate, audioSource);
+            for (int source : audioSources) {
+                try {
+                    mAudioRecord = setupAudioRecord(sampleRate, source, context);
+                    mAudioSource = source;
+                    Log.i(TAG, "Using audio source " + audioSourceName(source) +
+                            " at " + sampleRate + " Hz.");
+                    break;
+                } catch (AudioInitializationException e) {
+                    // Continue iteration, probing for a supported source/sample rate.
+                }
+            }
+            if (mAudioRecord != null) {
                 break;
-            } catch (AudioInitializationException e) {
-                // Continue iteration, probing for a supported sample rate.
             }
         }
 
@@ -68,7 +86,19 @@ public class AudioInput implements Runnable {
         mFrameSize = (sampleRate * AudioHandler.FRAME_SIZE) / AudioHandler.SAMPLE_RATE;
     }
 
-    private static AudioRecord setupAudioRecord(int sampleRate, int audioSource) throws AudioInitializationException {
+    private static int[] getAudioSourceCandidates(int audioSource) {
+        if (audioSource == MediaRecorder.AudioSource.UNPROCESSED) {
+            return new int[] {
+                    MediaRecorder.AudioSource.UNPROCESSED,
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION,
+                    MediaRecorder.AudioSource.MIC
+            };
+        }
+
+        return new int[] { audioSource };
+    }
+
+    private static AudioRecord setupAudioRecord(int sampleRate, int audioSource, Context context) throws AudioInitializationException {
         int minBufferSize = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO,
                                                                 AudioFormat.ENCODING_PCM_16BIT);
         if (minBufferSize <= 0)
@@ -87,7 +117,82 @@ public class AudioInput implements Runnable {
             throw new AudioInitializationException("AudioRecord failed to initialize!");
         }
 
+        setPreferredInputDevice(audioRecord, context);
+        disableAndroidAudioEffects(audioRecord);
+
         return audioRecord;
+    }
+
+    private static void setPreferredInputDevice(AudioRecord audioRecord, Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || context == null) {
+            return;
+        }
+
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager == null) {
+            return;
+        }
+
+        AudioDeviceInfo[] inputDevices = audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+        for (AudioDeviceInfo inputDevice : inputDevices) {
+            int type = inputDevice.getType();
+            if (type == AudioDeviceInfo.TYPE_USB_HEADSET ||
+                    type == AudioDeviceInfo.TYPE_WIRED_HEADSET) {
+                boolean selected = audioRecord.setPreferredDevice(inputDevice);
+                Log.i(TAG, "Preferred input device " + inputDevice.getProductName() +
+                        " selected=" + selected);
+                return;
+            }
+        }
+    }
+
+    private static void disableAndroidAudioEffects(AudioRecord audioRecord) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            return;
+        }
+
+        int sessionId = audioRecord.getAudioSessionId();
+        try {
+            if (AcousticEchoCanceler.isAvailable()) {
+                AcousticEchoCanceler aec = AcousticEchoCanceler.create(sessionId);
+                if (aec != null) {
+                    aec.setEnabled(false);
+                    aec.release();
+                    Log.i(TAG, "Disabled Android AcousticEchoCanceler.");
+                }
+            }
+            if (NoiseSuppressor.isAvailable()) {
+                NoiseSuppressor ns = NoiseSuppressor.create(sessionId);
+                if (ns != null) {
+                    ns.setEnabled(false);
+                    ns.release();
+                    Log.i(TAG, "Disabled Android NoiseSuppressor.");
+                }
+            }
+            if (AutomaticGainControl.isAvailable()) {
+                AutomaticGainControl agc = AutomaticGainControl.create(sessionId);
+                if (agc != null) {
+                    agc.setEnabled(false);
+                    agc.release();
+                    Log.i(TAG, "Disabled Android AutomaticGainControl.");
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Unable to disable Android audio effects.", t);
+        }
+    }
+
+    private static String audioSourceName(int audioSource) {
+        switch (audioSource) {
+            case MediaRecorder.AudioSource.UNPROCESSED:
+                return "UNPROCESSED";
+            case MediaRecorder.AudioSource.VOICE_RECOGNITION:
+                return "VOICE_RECOGNITION";
+            case MediaRecorder.AudioSource.MIC:
+                return "MIC";
+            default:
+                return String.valueOf(audioSource);
+        }
     }
 
     /**

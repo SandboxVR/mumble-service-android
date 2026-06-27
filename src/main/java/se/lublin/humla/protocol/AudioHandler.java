@@ -115,7 +115,7 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         mEncoderLock = new Object();
 
-        mInput = new AudioInput(this, mAudioSource, mSampleRate);
+        mInput = new AudioInput(this, mAudioSource, mSampleRate, mContext);
         mOutput = new AudioOutput(mOutputListener);
     }
 
