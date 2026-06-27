@@ -124,6 +124,9 @@ jobs:
           require_aar_entry 'jni/arm64-v8a/libjniopus.so'
           require_aar_entry 'jni/arm64-v8a/libjnispeex.so'
           require_aar_entry 'jni/arm64-v8a/libjnirnnoise.so'
+          require_aar_entry 'libs/bcprov-jdk15to18-1.84.jar'
+          require_aar_entry 'libs/bcpkix-jdk15to18-1.84.jar'
+          require_aar_entry 'libs/bcutil-jdk15to18-1.84.jar'
           if grep -Eq '^jni/(armeabi-v7a|x86|x86_64)/' "${RUNNER_TEMP}/aar-files.txt"; then
             echo "::error::Unexpected non-arm64 ABI in AAR"
             grep -E '^jni/(armeabi-v7a|x86|x86_64)/' "${RUNNER_TEMP}/aar-files.txt"

@@ -17,6 +17,14 @@
 
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
+def bouncyCastleVersion = '1.84'
+def bouncyCastleAarLibsDir = file("$buildDir/generated/bouncycastle-aar-libs")
+def bouncyCastleAarLibs = [
+    [artifact: 'bcprov-jdk15to18', sha256: 'a30777eebbd44aa1713c14ee04547de1df63ef3e383e910ed210e1d0f2c2ef92'],
+    [artifact: 'bcpkix-jdk15to18', sha256: 'c92c089b9cce6f889f5274ae3f762e87a9643bcc76493e044ac2f77b46cf8c0c'],
+    [artifact: 'bcutil-jdk15to18', sha256: '480d4d20d49aee66f4b04679d10437d7a3c35435c4e6b5378ad2b831a82b94d5'],
+]
+
 buildscript {
     repositories {
         mavenCentral()
@@ -35,8 +43,7 @@ repositories {
 
 dependencies {
     api 'com.google.protobuf:protobuf-java:3.11.4'
-    api 'org.bouncycastle:bcprov-jdk18on:1.84'
-    api 'org.bouncycastle:bcpkix-jdk18on:1.84'
+    api files(bouncyCastleAarLibs.collect { file("$bouncyCastleAarLibsDir/${it.artifact}-${bouncyCastleVersion}.jar") })
 
     implementation 'com.googlecode.javacpp:javacpp:0.7'
     implementation 'org.jetbrains:annotations:18.0.0'
@@ -50,6 +57,44 @@ allprojects {
         // TODO include deprecations at some point, but currently they are *many*
         options.compilerArgs << "-Xlint:all" << "-Xlint:-deprecation" << "-Xlint:-dep-ann"
     }
+}
+
+task downloadBouncyCastleAarLibs {
+    outputs.files(bouncyCastleAarLibs.collect { file("$bouncyCastleAarLibsDir/${it.artifact}-${bouncyCastleVersion}.jar") })
+
+    doLast {
+        bouncyCastleAarLibsDir.mkdirs()
+
+        bouncyCastleAarLibs.each { dependency ->
+            def jarFile = file("$bouncyCastleAarLibsDir/${dependency.artifact}-${bouncyCastleVersion}.jar")
+            def url = "https://repo1.maven.org/maven2/org/bouncycastle/${dependency.artifact}/${bouncyCastleVersion}/${dependency.artifact}-${bouncyCastleVersion}.jar"
+
+            if (!jarFile.exists() || sha256(jarFile) != dependency.sha256) {
+                new URL(url).withInputStream { input ->
+                    jarFile.withOutputStream { output ->
+                        output << input
+                    }
+                }
+            }
+
+            def actualSha256 = sha256(jarFile)
+            if (actualSha256 != dependency.sha256) {
+                throw new GradleException("Checksum mismatch for ${jarFile.name}. Expected ${dependency.sha256}, got ${actualSha256}")
+            }
+        }
+    }
+}
+
+static String sha256(File file) {
+    def digest = java.security.MessageDigest.getInstance('SHA-256')
+    file.withInputStream { input ->
+        byte[] buffer = new byte[8192]
+        int read
+        while ((read = input.read(buffer)) != -1) {
+            digest.update(buffer, 0, read)
+        }
+    }
+    return digest.digest().collect { String.format('%02x', it) }.join()
 }
 
 android {
@@ -85,8 +130,10 @@ android {
     }
 
     tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn ndkBuild
+        compileTask -> compileTask.dependsOn ndkBuild, downloadBouncyCastleAarLibs
     }
+
+    preBuild.dependsOn downloadBouncyCastleAarLibs
 
     lintOptions {
         quiet false
