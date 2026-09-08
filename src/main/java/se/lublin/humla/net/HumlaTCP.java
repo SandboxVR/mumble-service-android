@@ -45,7 +45,8 @@ public class HumlaTCP extends HumlaNetworkThread {
     private String mHost;
     private int mPort;
     private boolean mUseTor;
-    private SSLSocket mTCPSocket;
+    private volatile SSLSocket mTCPSocket;
+    private volatile boolean mVoiceTunneling;
     private DataInputStream mDataInput;
     private DataOutputStream mDataOutput;
     private boolean mRunning;
@@ -58,6 +59,12 @@ public class HumlaTCP extends HumlaNetworkThread {
 
     public void setTCPConnectionListener(TCPConnectionListener listener) {
         mListener = listener;
+    }
+
+    public synchronized void setVoiceTunneling(boolean enabled) {
+        mVoiceTunneling = enabled;
+        SSLSocket socket = mTCPSocket;
+        if (socket != null) NetworkQos.tcp(socket, enabled);
     }
 
     public void connect(String host, int port, boolean useTor) throws ConnectException {
@@ -87,6 +94,9 @@ public class HumlaTCP extends HumlaNetworkThread {
                 scsf.setHostname(mTCPSocket, mHost);
             }
 
+            synchronized (this) {
+                NetworkQos.tcp(mTCPSocket, mVoiceTunneling);
+            }
             mTCPSocket.setKeepAlive(true);
             mTCPSocket.startHandshake();
 

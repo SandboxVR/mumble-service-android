@@ -233,6 +233,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
             if(((mCryptState.mUiRemoteGood == 0) || (mCryptState.mUiGood == 0)) && mUsingUDP && elapsed > 20000000) {
                 mUsingUDP = false;
+                HumlaTCP tcp = mTCP;
+                if (tcp != null) tcp.setVoiceTunneling(true);
                 if(!shouldForceTCP() && mListener != null) {
                     if((mCryptState.mUiRemoteGood == 0) && (mCryptState.mUiGood == 0))
                         mListener.onConnectionWarning("UDP packets cannot be sent to or received from the server. Switching to TCP mode.");
@@ -243,6 +245,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
                 }
             } else if (!mUsingUDP && (mCryptState.mUiRemoteGood > 3) && (mCryptState.mUiGood > 3)) {
                 mUsingUDP = true;
+                HumlaTCP tcp = mTCP;
+                if (tcp != null) tcp.setVoiceTunneling(shouldForceTCP());
                 if (!shouldForceTCP() && mListener != null)
                     mListener.onConnectionWarning("UDP packets can be sent to and received from the server. Switching back to UDP mode.");
             }
@@ -339,6 +343,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
         try {
             mTCP = new HumlaTCP(socketFactory);
+            mTCP.setVoiceTunneling(!mUsingUDP);
             mTCP.setTCPConnectionListener(this);
             mTCP.connect(host, port, mUseTor);
             // UDP thread is formally started after TCP connection.

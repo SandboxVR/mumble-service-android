@@ -26,6 +26,24 @@ Currently, there is no tutorial to integrate Humla with your project. In the
 mean time, please examine the exposed interface IHumlaService as well as
 Mumla's implementation.
 
+## Network priority
+
+Outgoing UDP voice and pings request DSCP 46 (EF). The TLS connection requests
+DSCP 40 (CS5) for signaling, switches to 46 when voice falls back to TCP, and
+returns to 40 after UDP recovers. Forced TCP mode uses 46 from connection setup.
+These are socket-wide requests; TLS voice and signaling share one connection.
+Failures are logged under `HumlaQos` and do not prevent voice communication.
+
+The Murmur server must mark its own outgoing packets independently. DSCP does
+not guarantee a particular Wi-Fi WMM category; verify the headset driver and AP
+mapping in both directions.
+
+Run `./gradlew testReleaseUnitTest assembleRelease` with JDK 17. Integrators must
+bundle the rebuilt `build/outputs/aar/mumble-service-android-release.aar` and
+rebuild/reinstall their APK; existing published AARs do not gain these changes.
+The companion SSVR dependency preparation accepts this artifact through
+`MUMBLE_SERVICE_AAR_PATH`.
+
 ## License
 
 Humla is now licensed under the GNU GPL v3+. See [LICENSE](LICENSE).
