@@ -106,6 +106,10 @@ android {
     compileSdk 35
     ndkVersion '25.1.8937393'
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     if (System.getenv('ANDROID_BUILD_TOOLS_VERSION')) {
         buildToolsVersion System.getenv('ANDROID_BUILD_TOOLS_VERSION')
     }
