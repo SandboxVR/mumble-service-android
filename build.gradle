@@ -122,6 +122,7 @@ android {
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
         minSdk 23
         targetSdk 33
+        consumerProguardFiles 'consumer-rules.pro'
     }
 
     compileOptions {
