@@ -21,7 +21,6 @@ env:
   # Keep these Android tool versions in sync with alvr_private's release-build.yml.
   ANDROID_BUILD_TOOLS_VERSION: "34.0.0"
   ANDROID_PLATFORM_VERSION: "35"
-  AGP_UPGRADE_RELEASE_TAG: "0.3.1-AGP-upgrade"
 
 jobs:
   aar:
