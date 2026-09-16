@@ -9,6 +9,12 @@
 # Loader.putMemberOffset). Keep this small legacy runtime intact.
 -keep class com.googlecode.javacpp.** { *; }
 
+# JavaCPP 0.7 also bundles BuildMojo in the same artifact. Its Maven plugin API
+# references are build-time only and are intentionally absent from Android.
+# They are unreachable in Humla/SSVR, so do not make them R8 missing-class
+# errors in consuming applications.
+-dontwarn org.apache.maven.plugin.**
+
 # Humla's generated Opus/Speex JNI entry points encode the Java class and
 # native method names. Preserve names only for wrapper classes that actually
 # contain native methods; ordinary Humla code remains shrinkable/obfuscatable.
