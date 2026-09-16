@@ -77,14 +77,10 @@ jobs:
             "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
             "ndk;${ANDROID_NDK_VERSION}"
 
-      - name: Configure local Android SDK paths
+      - name: Configure local Android SDK path
         run: |
           set -euo pipefail
-
-          {
-            echo "sdk.dir=${ANDROID_HOME}"
-            echo "ndk.dir=${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}"
-          } > local.properties
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
 
       - name: Build arm64 AAR
         run: |
