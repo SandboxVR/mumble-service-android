@@ -42,6 +42,7 @@ repositories {
 }
 
 dependencies {
+    testImplementation 'junit:junit:4.13.2'
     api 'com.google.protobuf:protobuf-java:3.25.9'
     api files(bouncyCastleAarLibs.collect { file("$bouncyCastleAarLibsDir/${it.artifact}-${bouncyCastleVersion}.jar") })
 
