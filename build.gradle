@@ -31,7 +31,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.4'
+        classpath 'com.android.tools.build:gradle:8.7.3'
     }
 }
 apply plugin: 'com.android.library'
@@ -42,18 +42,21 @@ repositories {
 }
 
 dependencies {
-    api 'com.google.protobuf:protobuf-java:3.11.4'
+    api 'com.google.protobuf:protobuf-java:3.25.9'
     api files(bouncyCastleAarLibs.collect { file("$bouncyCastleAarLibsDir/${it.artifact}-${bouncyCastleVersion}.jar") })
 
+    // JavaCPP 0.7 is intentionally pinned. Humla still uses the legacy
+    // com.googlecode.javacpp API; modern JavaCPP uses org.bytedeco.javacpp
+    // and requires a source/JNI binding migration rather than a version-only bump.
     implementation 'com.googlecode.javacpp:javacpp:0.7'
-    implementation 'org.jetbrains:annotations:18.0.0'
-    implementation 'org.minidns:minidns-hla:0.3.4'
-    implementation 'org.minidns:minidns-android21:0.3.4'
-    implementation 'com.google.guava:guava:28.2-android'
+    implementation 'org.jetbrains:annotations:26.1.0'
+    implementation 'org.minidns:minidns-hla:1.1.1'
+    implementation 'org.minidns:minidns-android23:1.1.1'
+    implementation 'com.google.guava:guava:33.7.1-android'
 }
 
 allprojects {
-    tasks.withType(JavaCompile) {
+    tasks.withType(JavaCompile).configureEach {
         // TODO include deprecations at some point, but currently they are *many*
         options.compilerArgs << "-Xlint:all" << "-Xlint:-deprecation" << "-Xlint:-dep-ann"
     }
@@ -98,8 +101,10 @@ static String sha256(File file) {
 }
 
 android {
-    compileSdkVersion 29
-    //ndkVersion '23.1.7779620'
+    namespace 'se.lublin.humla'
+    compileSdk 35
+    ndkVersion '25.1.8937393'
+
     if (System.getenv('ANDROID_BUILD_TOOLS_VERSION')) {
         buildToolsVersion System.getenv('ANDROID_BUILD_TOOLS_VERSION')
     }
@@ -110,14 +115,13 @@ android {
     defaultConfig {
         testApplicationId "se.lublin.humla.test"
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
-        minSdkVersion 14
-        targetSdkVersion 29
+        minSdk 23
+        targetSdk 33
+    }
 
-//        ndk {
-//            abiFilters "armeabi", "armeabi-v7a", "x86"
-//            stl "gnustl_static"
-//            cFlags "-I\$(LOCAL_PATH)/speex/include/ -I\$(LOCAL_PATH)/opus/include -D__EMX__ -DUSE_KISS_FFT -DFIXED_POINT -DEXPORT='' -DHAVE_CONFIG_H -fvisibility=hidden -DOPUS_BUILD -DVAR_ARRAYS -Wno-traditional -DFIXED_POINT"
-//        }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     // Trigger NDK build on java compilation task.
@@ -129,20 +133,16 @@ android {
         commandLine ndkExe, '-C', file('src/main/jni/').absolutePath
     }
 
-    tasks.withType(JavaCompile) {
+    tasks.withType(JavaCompile).configureEach {
         compileTask -> compileTask.dependsOn ndkBuild, downloadBouncyCastleAarLibs
     }
 
     preBuild.dependsOn downloadBouncyCastleAarLibs
 
-    lintOptions {
-        quiet false
-
-        disable "InvalidPackage"
-
-        disable "MissingTranslation"
-
-        ignoreWarnings false
-        abortOnError true
+    lint {
+        quiet = false
+        disable += ["InvalidPackage", "MissingTranslation"]
+        warningsAsErrors = false
+        abortOnError = true
     }
 }
