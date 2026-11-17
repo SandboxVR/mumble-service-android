@@ -97,8 +97,9 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
     private boolean mUsingUDP = true;
     private boolean mForceTCP;
     private boolean mUseTor;
-    private boolean mConnected;
-    private boolean mSynchronized;
+    private volatile boolean mConnected;
+    private volatile boolean mSynchronized;
+    private volatile boolean mDisconnectRequested;
     private HumlaException mError;
     private boolean mExceptionHandled = false;
     private long mStartTimestamp; // Time that the connection was initiated in nanoseconds
@@ -152,7 +153,11 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
             mMainHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mListener.onConnectionSynchronized();
+                    // Keep this deferred until all handlers have processed ServerSync, but do
+                    // not deliver it after cancellation while it was waiting in the main queue.
+                    if (isConnected() && isSynchronized() && mListener != null) {
+                        mListener.onConnectionSynchronized();
+                    }
                 }
             });
 
@@ -328,6 +333,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
         mPort = port;
         mConnected = false;
         mSynchronized = false;
+        mDisconnectRequested = false;
         mError = null;
         mExceptionHandled = false;
         mUsingUDP = !shouldForceTCP();
@@ -483,6 +489,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
      * Gracefully shuts down all networking. Blocks until all network threads have stopped.
      */
     public void disconnect() {
+        mDisconnectRequested = true;
         mConnected = false;
         mSynchronized = false;
         mHost = null;
@@ -492,7 +499,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
         if(mPingTask != null) mPingTask.cancel(true);
         if(mTCP != null) mTCP.disconnect();
         if(mUDP != null) mUDP.disconnect();
-        mPingExecutorService.shutdown();
+        if(mPingExecutorService != null) mPingExecutorService.shutdown();
 
         mTCP = null;
         mUDP = null;
@@ -625,6 +632,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
     @Override
     public void onTCPMessageReceived(HumlaTCPMessageType type, int length, byte[] data) {
+        // TCP may already have queued messages when the caller disconnects/reconnects.
+        if (mDisconnectRequested || !mConnected) return;
         if(!UNLOGGED_MESSAGES.contains(type))
             Log.v(TAG, "IN: " + type);
 
@@ -648,6 +657,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
     @Override
     public void onTCPConnectionEstablished() {
+        if (mDisconnectRequested) return;
         mConnected = true;
 
         // Attempt to start UDP thread once connected.

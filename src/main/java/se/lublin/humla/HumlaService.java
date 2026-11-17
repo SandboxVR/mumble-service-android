@@ -144,6 +144,7 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
     private HumlaCallbacks mCallbacks;
 
     private HumlaConnection mConnection;
+    private ConnectionListener mConnectionListener;
     private ConnectionState mConnectionState;
     private ModelHandler mModelHandler;
     private AudioHandler mAudioHandler;
@@ -288,11 +289,20 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
     protected void connect() {
         try {
             setReconnecting(false);
+
+            // Invalidate queued callbacks before replacing the connection. In particular, an old
+            // ServerSync or disconnect must not initialize or tear down the new session's audio.
+            mConnectionListener = null;
+            if (mConnection != null) {
+                mConnection.disconnect();
+                clearConnectionResources();
+            }
             mConnectionState = ConnectionState.DISCONNECTED;
             mVoiceTargetId = 0;
             mWhisperTargetList.clear();
 
-            mConnection = new HumlaConnection(this);
+            mConnectionListener = new ConnectionListener();
+            mConnection = new HumlaConnection(mConnectionListener);
             mConnection.setForceTCP(mForceTcp);
             mConnection.setUseTor(mUseTor);
             mConnection.setKeys(mCertificate, mCertificatePassword);
@@ -310,6 +320,35 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
         } catch (HumlaException e) {
             e.printStackTrace();
             mCallbacks.onDisconnected(e);
+        }
+    }
+
+    private final class ConnectionListener implements HumlaConnection.HumlaConnectionListener {
+        private boolean isCurrent() {
+            return mConnectionListener == this;
+        }
+
+        @Override public void onConnectionEstablished() {
+            if (isCurrent()) HumlaService.this.onConnectionEstablished();
+        }
+
+        @Override public void onConnectionSynchronized() {
+            if (isCurrent()) HumlaService.this.onConnectionSynchronized();
+        }
+
+        @Override public void onConnectionHandshakeFailed(X509Certificate[] chain) {
+            if (isCurrent()) HumlaService.this.onConnectionHandshakeFailed(chain);
+        }
+
+        @Override public void onConnectionDisconnected(HumlaException error) {
+            if (isCurrent()) {
+                mConnectionListener = null;
+                HumlaService.this.onConnectionDisconnected(error);
+            }
+        }
+
+        @Override public void onConnectionWarning(String warning) {
+            if (isCurrent()) HumlaService.this.onConnectionWarning(warning);
         }
     }
 
@@ -353,36 +392,54 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
 
     @Override
     public void onConnectionSynchronized() {
-        // early disconned?
-        if (!mConnection.isConnected()) {
+        final HumlaConnection connection = mConnection;
+        final ModelHandler model = mModelHandler;
+        if (connection == null || !connection.isConnected() || !connection.isSynchronized()
+                || model == null || mConnectionState == ConnectionState.CONNECTED) {
             return;
         }
 
-        // TODO hackish, but this seems to happen?!
-        if (mModelHandler == null) {
-            Log.e(TAG, "onConnectionSynchronized: mAudioHandler is null");
-            return;
-        }
-
-        mConnectionState = ConnectionState.CONNECTED;
-
-        Log.v(TAG, "Connected");
-        mWakeLock.acquire();
-
+        final User self;
+        final int maxBandwidth;
+        final HumlaUDPMessageType codec;
         try {
-            mAudioHandler = mAudioBuilder.initialize(
-                    mModelHandler.getUser(mConnection.getSession()),
-                    mConnection.getMaxBandwidth(), mConnection.getCodec(),
-                    mVoiceTargetId);
-            mConnection.addTCPMessageHandlers(mAudioHandler);
-            mConnection.addUDPMessageHandlers(mAudioHandler);
+            self = model.getUser(connection.getSession());
+            maxBandwidth = connection.getMaxBandwidth();
+            codec = connection.getCodec();
+        } catch (NotSynchronizedException e) {
+            // Cancellation can invalidate synchronization before this deferred callback runs.
+            // Do not publish CONNECTED or acquire resources for an abandoned session.
+            Log.d(TAG, "Ignoring synchronization callback for an inactive connection");
+            return;
+        }
+        if (self == null) {
+            Log.w(TAG, "Ignoring synchronization callback without a session user");
+            return;
+        }
+
+        AudioHandler audio = null;
+        try {
+            audio = mAudioBuilder.initialize(self, maxBandwidth, codec, mVoiceTargetId);
         } catch (AudioException e) {
             e.printStackTrace();
             onConnectionWarning(e.getMessage());
-        } catch (NotSynchronizedException e) {
-            throw new RuntimeException("Connection should be synchronized in callback for synchronization!", e);
         }
 
+        // Audio initialization (or a warning observer) may have cancelled/replaced the session.
+        if (connection != mConnection || model != mModelHandler
+                || !connection.isConnected() || !connection.isSynchronized()) {
+            if (audio != null) audio.shutdown();
+            return;
+        }
+
+        mAudioHandler = audio;
+        if (audio != null) {
+            connection.addTCPMessageHandlers(audio);
+            connection.addUDPMessageHandlers(audio);
+        }
+        mConnectionState = ConnectionState.CONNECTED;
+        Log.v(TAG, "Connected");
+        mWakeLock.acquire();
         mCallbacks.onConnected();
     }
 
@@ -404,11 +461,18 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
             mConnectionState = ConnectionState.DISCONNECTED;
         }
 
+        clearConnectionResources();
+        mCallbacks.onDisconnected(e);
+    }
+
+    private void clearConnectionResources() {
         if(mWakeLock.isHeld()) {
             mWakeLock.release();
         }
 
         if (mAudioHandler != null) {
+            mConnection.removeTCPMessageHandler(mAudioHandler);
+            mConnection.removeUDPMessageHandler(mAudioHandler);
             mAudioHandler.shutdown();
         }
 
@@ -420,7 +484,6 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
         // Halt SCO connection on shutdown.
         mBluetoothReceiver.stopBluetoothSco();
 
-        mCallbacks.onDisconnected(e);
     }
 
     @Override
