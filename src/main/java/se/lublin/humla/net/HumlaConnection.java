@@ -91,7 +91,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
     private Handler mMainHandler;
 
     // Networking and protocols
-    private HumlaTCP mTCP;
+    private volatile HumlaTCP mTCP;
     private HumlaUDP mUDP;
     private ScheduledFuture<?> mPingTask;
     private boolean mUsingUDP = true;
@@ -576,8 +576,10 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
      * @param messageType The corresponding protobuf message type.
      */
     public void sendTCPMessage(Message message, HumlaTCPMessageType messageType) {
-        if(!mConnected || mTCP == null) return;
-        mTCP.sendMessage(message, messageType);
+        // Teardown may clear the field after the state check. Keep the transport we checked.
+        final HumlaTCP tcp = mTCP;
+        if(mDisconnectRequested || !mConnected || tcp == null) return;
+        tcp.sendMessage(message, messageType);
     }
 
     /**
@@ -691,6 +693,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
     @Override
     public void onUDPDataReceived(byte[] data) {
+        // UDP callbacks can already be queued when this connection is cancelled.
+        if (mDisconnectRequested || !mConnected || data == null || data.length == 0) return;
         if (usesProtobufUDP() && data.length > 0) {
             try {
                 if (data[0] == MumbleUDPProtocol.MESSAGE_PING) {
@@ -733,9 +737,9 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
     @Override
     public void resyncCryptState() {
-        // Send an empty cryptstate message to resync.
+        // A queued UDP resync can outlive its TCP connection. The normal send path drops it.
         Mumble.CryptSetup.Builder csb = Mumble.CryptSetup.newBuilder();
-        mTCP.sendMessage(csb.build(), HumlaTCPMessageType.CryptSetup);
+        sendTCPMessage(csb.build(), HumlaTCPMessageType.CryptSetup);
     }
 
     /**

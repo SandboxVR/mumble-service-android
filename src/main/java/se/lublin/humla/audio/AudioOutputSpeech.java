@@ -103,24 +103,20 @@ public class AudioOutputSpeech implements Callable<AudioOutputSpeech.Result> {
     }
 
     public void addFrameToBuffer(PacketBuffer pb, byte flags, int seq) {
-        if(pb.capacity() < 2)
+        if(pb.left() < 2)
             return;
 
         synchronized (mJitterLock) {
             try {
                 long header = pb.readLong();
+                // Only the payload length (13 bits) and terminator flag are defined here.
+                if (header < 0 || header > 0x3fff) return;
                 int opusSize = (int) (header & ((1 << 13) - 1));
-                int samples;
-
-                if (opusSize > 0) {
-                    byte[] data = pb.dataBlock(opusSize);
-                    if (data.length != opusSize) return;
-
-                    int frames = Opus.opus_packet_get_nb_frames(data, opusSize);
-                    samples = frames * Opus.opus_packet_get_samples_per_frame(data, AudioHandler.SAMPLE_RATE);
-                } else {
-                    return;
-                }
+                if (opusSize == 0 || opusSize > pb.left()) return;
+                byte[] opusData = pb.dataBlock(opusSize);
+                int samples = getPacketSamples(opusData);
+                // Opus reports negative errors and permits at most 120 ms per packet.
+                if (samples <= 0 || samples > AudioHandler.SAMPLE_RATE * 120 / 1000) return;
                 pb.rewind();
 
                 int size = pb.left();
@@ -129,10 +125,14 @@ public class AudioOutputSpeech implements Callable<AudioOutputSpeech.Result> {
                 synchronized (mJitterLock) {
                     mJitterBuffer.put(packet);
                 }
-            } catch (BufferOverflowException e) {
-                e.printStackTrace();
+            } catch (BufferUnderflowException | BufferOverflowException e) {
+                // A truncated varint/payload is a dropped datagram, not a fatal audio error.
             }
         }
+    }
+
+    int getPacketSamples(byte[] data) {
+        return Opus.opus_packet_get_nb_samples(data, data.length, AudioHandler.SAMPLE_RATE);
     }
 
     @Override

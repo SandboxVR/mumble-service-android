@@ -24,6 +24,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
 
+import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -213,9 +214,18 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
     }
 
     public void queueVoiceData(byte[] data, HumlaUDPMessageType messageType) {
-        if(!mRunning)
+        if(!mRunning || data == null || data.length == 0)
             return;
 
+        try {
+            queueVoicePacket(data, messageType);
+        } catch (BufferUnderflowException e) {
+            // Session/sequence varints and frame headers are supplied by the remote peer.
+            Log.w(TAG, "Discarding truncated voice packet");
+        }
+    }
+
+    private void queueVoicePacket(byte[] data, HumlaUDPMessageType messageType) {
         byte msgFlags = (byte) (data[0] & 0x1f);
         PacketBuffer pds = new PacketBuffer(data, data.length);
         pds.skip(1);
