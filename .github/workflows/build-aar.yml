@@ -104,6 +104,9 @@ jobs:
 
           ./gradlew --no-daemon assembleRelease
 
+      - name: Test TLS failure handling
+        run: ./gradlew --no-daemon testReleaseUnitTest --tests se.lublin.humla.net.HumlaTLSFailureTest
+
       - name: Verify AAR contents
         id: aar
         run: |
