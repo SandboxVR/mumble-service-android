@@ -42,7 +42,6 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'junit:junit:4.13.2'
     api 'com.google.protobuf:protobuf-java:3.11.4'
     api files(bouncyCastleAarLibs.collect { file("$bouncyCastleAarLibsDir/${it.artifact}-${bouncyCastleVersion}.jar") })
 
@@ -99,7 +98,6 @@ static String sha256(File file) {
 }
 
 android {
-    testOptions.unitTests.returnDefaultValues = true
     compileSdkVersion 29
     //ndkVersion '23.1.7779620'
     if (System.getenv('ANDROID_BUILD_TOOLS_VERSION')) {

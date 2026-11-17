@@ -93,7 +93,6 @@ public class HumlaUDP implements Runnable {
             mUDPSocket = new DatagramSocket();
 
             mUDPSocket.connect(mResolvedHost, mPort);
-            NetworkQos.voice(mUDPSocket);
             Log.d(TAG, "Created socket");
 
             // Start outgoing consumer once the UDP socket is open, as a child thread.
