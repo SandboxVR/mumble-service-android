@@ -73,10 +73,12 @@ public class HumlaSSLSocketFactory {
 
     /**
      * Gets the certificate chain of the remote host.
-     * @return The remote server's certificate chain, or null if a connection has not reached handshake yet.
+     * @return The remote server's certificate chain, or null if no chain was captured.
      */
     public X509Certificate[] getServerChain() {
-        return mTrustWrapper.getServerChain();
+        // The configured TLS context may not use a chain-capturing wrapper.
+        // Preserve the original handshake error when no certificate is available.
+        return mTrustWrapper == null ? null : mTrustWrapper.getServerChain();
     }
 
     /**

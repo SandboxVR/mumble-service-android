@@ -63,6 +63,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          # The action's default also requests the retired SDK "tools" package.
+          packages: "platform-tools"
 
       - name: Install Android SDK packages
         run: |
@@ -103,6 +106,9 @@ jobs:
           test -f src/main/libs/arm64-v8a/libjnirnnoise.so
 
           ./gradlew --no-daemon assembleRelease
+
+      - name: Test TLS failure handling
+        run: ./gradlew --no-daemon testReleaseUnitTest --tests se.lublin.humla.net.HumlaTLSFailureTest
 
       - name: Verify AAR contents
         id: aar
