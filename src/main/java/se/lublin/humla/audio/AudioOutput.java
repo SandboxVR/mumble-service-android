@@ -24,6 +24,8 @@ import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
 
+import se.lublin.humla.util.FailureLogWindow;
+
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +52,8 @@ import se.lublin.humla.protocol.AudioHandler;
  */
 public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListener {
     private static final String TAG = AudioOutput.class.getName();
+    private final FailureLogWindow truncatedPackets = new FailureLogWindow();
+
 
     private Map<Integer, AudioOutputSpeech> mAudioOutputs = new HashMap<>();
     private AudioTrack mAudioTrack;
@@ -221,7 +225,8 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
             queueVoicePacket(data, messageType);
         } catch (BufferUnderflowException e) {
             // Session/sequence varints and frame headers are supplied by the remote peer.
-            Log.w(TAG, "Discarding truncated voice packet");
+            long count = truncatedPackets.record(System.nanoTime());
+            if (count != 0) Log.w(TAG, "Discarding truncated voice packet; occurrences=" + count);
         }
     }
 

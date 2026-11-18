@@ -32,6 +32,7 @@ import android.util.Log;
 import se.lublin.humla.exception.AudioInitializationException;
 import se.lublin.humla.exception.NativeAudioException;
 import se.lublin.humla.protocol.AudioHandler;
+import se.lublin.humla.util.FailureLogWindow;
 
 /**
  * Created by andrew on 23/08/13.
@@ -48,7 +49,7 @@ public class AudioInput implements Runnable {
     private int mAudioSource;
 
     private Thread mRecordThread;
-    private boolean mRecording;
+    private volatile boolean mRecording;
 
     public AudioInput(AudioInputListener listener, int audioSource, int targetSampleRate, Context context)
             throws NativeAudioException, AudioInitializationException {
@@ -265,12 +266,31 @@ public class AudioInput implements Runnable {
 
         final short[] mAudioBuffer = new short[mFrameSize];
         // We loop when the 'recording' instance var is true instead of checking audio record state because we want to always cleanly shutdown.
+        FailureLogWindow readFailures = new FailureLogWindow();
+        long retryDelayMs = 20;
+        boolean reportRecovery = false;
         while(mRecording) {
             int shortsRead = mAudioRecord.read(mAudioBuffer, 0, mFrameSize);
             if(shortsRead > 0) {
+                if (reportRecovery) {
+                    Log.i(TAG, "Microphone reads resumed");
+                    reportRecovery = false;
+                }
+                retryDelayMs = 20;
                 mListener.onAudioInputReceived(mAudioBuffer, mFrameSize);
-            } else {
-                Log.e(TAG, "Error fetching audio! AudioRecord error " + shortsRead);
+            } else if (mRecording) {
+                long count = readFailures.record(System.nanoTime());
+                if (count != 0) {
+                    Log.e(TAG, "AudioRecord read failed: result=" + shortsRead + " occurrences=" + count);
+                    reportRecovery = true;
+                }
+                // Some recorder errors return immediately, even on the urgent audio thread.
+                try {
+                    Thread.sleep(retryDelayMs);
+                } catch (InterruptedException ignored) {
+                    if (!mRecording) break;
+                }
+                retryDelayMs = Math.min(1000, retryDelayMs * 2);
             }
         }
 

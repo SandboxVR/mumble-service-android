@@ -21,6 +21,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import se.lublin.humla.util.FailureLogWindow;
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -61,6 +63,10 @@ import se.lublin.humla.util.HumlaException;
 
 public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP.UDPConnectionListener {
     private static final String TAG = HumlaConnection.class.getName();
+    private final FailureLogWindow invalidProtobuf = new FailureLogWindow();
+    private final FailureLogWindow unsupportedVoice = new FailureLogWindow();
+    private final FailureLogWindow invalidOutgoingAudio = new FailureLogWindow();
+
 
     /**
      * Message types that aren't shown in logcat.
@@ -599,7 +605,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
         if (usesProtobufUDP() && !force) {
             byte[] protobufPacket = MumbleUDPProtocol.encodeAudioFromLegacy(data, length);
             if (protobufPacket == null) {
-                Log.w(TAG, "Unable to encode legacy UDP audio as Mumble 1.5 protobuf audio.");
+                long count = invalidOutgoingAudio.record(System.nanoTime());
+                if (count != 0) Log.w(TAG, "Unable to encode legacy UDP audio; occurrences=" + count);
                 return;
             }
             packetData = protobufPacket;
@@ -713,7 +720,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
                     return;
                 }
             } catch (InvalidProtocolBufferException e) {
-                Log.w(TAG, "Failed to decode protobuf UDP packet", e);
+                long count = invalidProtobuf.record(System.nanoTime());
+                if (count != 0) Log.w(TAG, "Failed to decode protobuf UDP packet; occurrences=" + count + " lastError=" + e.getMessage());
                 return;
             }
         }
@@ -927,7 +935,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
             case UDPVoiceCELTAlpha:
             case UDPVoiceSpeex:
             case UDPVoiceCELTBeta:
-                Log.w(TAG, "Dropping unsupported non-Opus UDP voice packet: " + messageType);
+                long count = unsupportedVoice.record(System.nanoTime());
+                if (count != 0) Log.w(TAG, "Dropping unsupported UDP voice codec " + messageType + "; occurrences=" + count);
                 break;
         }
     }
